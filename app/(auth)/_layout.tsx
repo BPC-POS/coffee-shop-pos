@@ -1,7 +1,7 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 
-const TabsLayout = () => {
+const AuthLayout = () => {
   return (
     <Stack
       screenOptions={{
@@ -13,4 +13,4 @@ const TabsLayout = () => {
   );
 };
 
-export default TabsLayout;
+export default AuthLayout;
