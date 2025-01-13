@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 
 const OverviewScreen = () => {
     const router = useRouter();
+    const [isHovered, setIsHovered] = useState(false);
 
     const handleLogin = () => {
         router.push('/(auth)/login');
@@ -17,7 +18,7 @@ const OverviewScreen = () => {
 
     return (
         <ImageBackground
-            source={require('@/assets/images/background.jpg')} 
+            source={require('@/assets/images/background.jpg')}
             style={styles.backgroundImage}
         >
             <View style={styles.container}>
@@ -25,8 +26,19 @@ const OverviewScreen = () => {
                 <Text style={styles.welcomeText}>
                     Khám phá những điều thú vị đang chờ đón bạn.
                 </Text>
-                <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                    <Text style={styles.buttonText}>Đăng nhập</Text>
+                <TouchableOpacity
+                    style={[
+                        styles.loginButton,
+                        isHovered ? styles.loginButtonHover : {},
+                    ]}
+                    onPress={handleLogin}
+                    onPressIn={() => setIsHovered(true)}
+                    onPressOut={() => setIsHovered(false)}
+                >
+                    <Text style={[
+                         styles.buttonText,
+                         isHovered ? styles.buttonTextHover : {}
+                         ]}>ĐĂNG NHẬP</Text>
                 </TouchableOpacity>
             </View>
         </ImageBackground>
@@ -45,31 +57,38 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 20,
-        backgroundColor: 'rgba(0,0,0,0.3)', // Tạo lớp nền mờ
+        backgroundColor: 'rgba(0,0,0,0.3)',
     },
     title: {
         fontSize: 32,
-        fontWeight: 'bold',
         color: 'white',
         marginBottom: 20,
         textAlign: 'center',
         fontFamily: 'Poppins-Bold',
     },
     welcomeText: {
-        fontSize: 18,
+        fontSize: 20,
         textAlign: 'center',
         color: 'white',
         marginBottom: 30,
+        fontFamily: 'Poppins-Regular',
     },
     loginButton: {
-        backgroundColor: '#4A90E2',
+        backgroundColor: '#fff',
         paddingVertical: 15,
         paddingHorizontal: 40,
         borderRadius: 30,
     },
+    loginButtonHover: {
+        backgroundColor: 'black',
+    },
     buttonText: {
-        color: 'white',
-        fontSize: 18,
+        color: 'black',
+        fontSize: 22,
         fontWeight: '600',
+        fontFamily: 'Poppins-Bold',
+    },
+    buttonTextHover:{
+        color: 'white'
     },
 });

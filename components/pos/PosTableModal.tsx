@@ -6,7 +6,7 @@ interface Props {
     tableNumber: string | null;
     onConfirm: () => void;
     onCancel: () => void;
-    isCancelling?: boolean; // Thêm thuộc tính isCancelling
+    isCancelling?: boolean; 
 }
 
 const PosTableModal: React.FC<Props> = ({ isVisible, tableNumber, onConfirm, onCancel, isCancelling }) => {
