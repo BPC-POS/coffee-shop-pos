@@ -4,22 +4,26 @@ import { Stack } from 'expo-router';
 import POSArea from '@/components/pos/PosArea';
 import PosProduct from '@/components/pos/PosProduct';
 import PosOrderSummary from '@/components/pos/PosOrderSummary';
-import { OrderItem, Order, OrderStatus, PaymentStatus } from '@/types/Order';
+import { OrderItem, Order, OrderStatus, PaymentStatus, PaymentMethod } from '@/types/Order';
 import { Table } from '@/types/Table';
 
 
 interface Props {
-    onTableSelect: (table: Table | null) => void; 
+    onTableSelect: (table: Table | null) => void;
 }
 
 const PosScreen = () => {
-    const [selectedTable, setSelectedTable] = useState<Table | null>(null); 
+    const [selectedTable, setSelectedTable] = useState<Table | null>(null);
     const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+    const [requireTableModalVisible, setRequireTableModalVisible] = useState(false);
 
-    const handleTableSelect = (table: Table | null) => {  
+    const handleTableSelect = (table: Table | null) => {
         console.log("PosScreen - handleTableSelect - table:", table);
         setSelectedTable(table);
     };
+     const handleOpenRequireTableModal = () => {
+        setRequireTableModalVisible(true)
+     }
 
   const handleUpdateQuantity = (productId: number, newQuantity: number) => {
     setOrderItems(prevItems =>
@@ -43,8 +47,8 @@ const PosScreen = () => {
       } else {
            const newOrderItem : OrderItem = {
                  id: Date.now(),
-                    productId: item.productId,
-                     productName: item.productName,
+                    productId: item.id,
+                     productName: item.name,
                      price: item.price,
                      quantity: 1,
                      note: ''
@@ -77,10 +81,30 @@ const PosScreen = () => {
       }, [orderItems, selectedTable]);
 
 
+     const handlePaymentComplete = (method: 'cash' | 'transfer') => {
+        console.log("PosScreen - handlePaymentComplete - payment method:", method);
+        // Xử lý thanh toán ở đây
+       const order = calculateOrder
+       if(order){
+            const updatedOrder: Order = {
+              ...order,
+                paymentStatus: PaymentStatus.PAID,
+              paymentMethod: method === 'cash' ? PaymentMethod.CASH : PaymentMethod.TRANSFER,
+           }
+           console.log(updatedOrder)
+       }
 
+
+        setOrderItems([]);
+        if(method === 'cash') {
+            setSelectedTable(null);
+        }
+
+
+    }
     const handleCheckout = () => {
         console.log(orderItems)
-        setOrderItems([]);
+       
     }
 
     const handleCancelOrder = () => {
@@ -107,21 +131,22 @@ const PosScreen = () => {
            </View>
            <View style={styles.productContainer}>
                 <PosProduct
-            selectedTable={selectedTable?.id ? String(selectedTable?.id) : null}
-            orderItems={orderItems}
-            onUpdateQuantity={handleUpdateQuantity}
-            onRemoveItem={handleRemoveItem}
-            onCheckout={handleCheckout}
-            onAddItem={handleAddItem} onOpenRequireTableModal={function (): void {
-              throw new Error('Function not implemented.');
-            } }                />
+                  selectedTable={selectedTable?.id ? String(selectedTable?.id): null}
+                  orderItems={orderItems}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  onRemoveItem={handleRemoveItem}
+                  onCheckout={handleCheckout}
+                  onAddItem={handleAddItem}
+                     onOpenRequireTableModal={handleOpenRequireTableModal}
+                />
                <PosOrderSummary
-                selectedTable={selectedTable?.name || null} // Truyền tên bàn
+                selectedTable={selectedTable?.name || null}
                 orderItems={orderItems}
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemoveItem={handleRemoveItem}
                 onCheckout={handleCheckout}
                 onCancelOrder={handleCancelOrder}
+                onPaymentComplete={handlePaymentComplete}
                 />
           </View>
         </View>

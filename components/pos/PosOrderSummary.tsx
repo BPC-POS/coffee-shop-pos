@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { OrderItem } from '@/types/Order';
 import { Order } from '@/types/Order';
-import { Ionicons } from '@expo/vector-icons';
-
+import { Ionicons } from '@expo/vector-icons'; // Import Ionicons
+import PaymentModal from './PaymentModal';
 
 interface Props {
     selectedTable: string | null;
@@ -12,6 +12,7 @@ interface Props {
     onRemoveItem: (productId: number) => void;
     onCheckout: () => void;
     onCancelOrder: () => void;
+    onPaymentComplete: (method: 'cash' | 'transfer') => void;
 }
 
 const PosOrderSummary: React.FC<Props> = ({
@@ -21,10 +22,13 @@ const PosOrderSummary: React.FC<Props> = ({
     onRemoveItem,
     onCheckout,
     onCancelOrder,
+    onPaymentComplete
 }) => {
     const [discountCode, setDiscountCode] = useState<string>('');
     const [totalAmount, setTotalAmount] = useState(0);
-    const [tableNumber, setTableNumber] = useState<string | null>(null)
+    const [tableNumber, setTableNumber] = useState<string | null>(null);
+    const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+
 
     useEffect(() => {
         const total = orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -46,6 +50,17 @@ const PosOrderSummary: React.FC<Props> = ({
             onUpdateQuantity(productId, newQuantity);
         }
     };
+   const handlePaymentMethodSelect = (method: 'cash' | 'transfer') => {
+        setPaymentModalVisible(false);
+        onPaymentComplete(method)
+   }
+   const handleClosePaymentModal = () => {
+       setPaymentModalVisible(false);
+   }
+   const handleCheckoutPress = () => {
+        setPaymentModalVisible(true);
+    }
+
    const QuantityControl = ({ productId, quantity }: { productId: number, quantity: number }) => {
         return (
             <View style={styles.quantityContainer}>
@@ -112,13 +127,19 @@ const PosOrderSummary: React.FC<Props> = ({
                 </Text>
             </View>
             <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.checkoutButton, { flex: 1, marginRight: 5 }]} onPress={onCheckout}>
+                <TouchableOpacity style={[styles.checkoutButton, { flex: 1, marginRight: 5 }]} onPress={handleCheckoutPress}>
                     <Text style={styles.checkoutButtonText}>Thanh toán</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.cancelButton, { flex: 1 }]} onPress={onCancelOrder}>
                     <Text style={styles.cancelButtonText}>Hủy đơn</Text>
                 </TouchableOpacity>
             </View>
+                <PaymentModal
+                    isVisible={paymentModalVisible}
+                    totalAmount={calculateDiscountedTotal()}
+                    onPaymentMethodSelect={handlePaymentMethodSelect}
+                     onClose={handleClosePaymentModal}
+                />
         </View>
     );
 };
