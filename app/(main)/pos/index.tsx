@@ -37,26 +37,27 @@ const PosScreen = () => {
     setOrderItems(prevItems => prevItems.filter(item => item.productId !== productId));
   };
 
-  const handleAddItem = (item: any) => {
-    setOrderItems(prevItems => {
-      const existingItem = prevItems.find(exItem => exItem.productId === item.productId);
-      if (existingItem) {
-        return prevItems.map(exItem =>
-          exItem.productId === item.productId ? { ...exItem, quantity: exItem.quantity + 1 } : exItem
-        );
-      } else {
+    // PosScreen.tsx
+    const handleAddItem = (item: any) => {
+      setOrderItems(prevItems => {
+        const existingItem = prevItems.find(exItem => exItem.productId === item.productId);
+        if (existingItem) {
+          return prevItems.map(exItem =>
+            exItem.productId === item.productId ? { ...exItem, quantity: exItem.quantity + 1 } : exItem
+          );
+        } else {
            const newOrderItem : OrderItem = {
-                 id: Date.now(),
-                    productId: item.id,
-                     productName: item.name,
-                     price: item.price,
-                     quantity: 1,
-                     note: ''
-           }
-          return [...prevItems, newOrderItem];
-      }
-    });
-  };
+               id: Date.now(),
+               productId: item.productId, 
+               productName: item.productName,  
+               price: item.price,
+               quantity: 1,
+               note: ''
+             }
+             return [...prevItems, newOrderItem];
+        }
+      });
+    };
 
 
     const calculateOrder = useMemo(() => {

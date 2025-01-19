@@ -1,8 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
+import { Product } from '@/types/Product';
+import ProductList from '@/components/product/ProductList';
+import { mockProducts } from '@/mock/mockProducts';
 
 const ProductsScreen = () => {
+  const handleEdit = (product: Product) => {
+  };
+  const handleDelete = (product: Product) => {
+  };
+
   return (
     <View style={styles.container}>
       <Stack.Screen
@@ -18,8 +26,12 @@ const ProductsScreen = () => {
         }}
       />
       <View style={styles.content}>
-        <Text style={styles.title}>Trang quản lý sản phẩm</Text>
-        {/* Nội dung của trang quản lý sản phẩm */}
+         {/* <ProductList
+           products={mockProducts}
+           currentCategory={'all'}
+           onEdit={handleEdit}
+           onDelete={handleDelete}
+        /> */}
       </View>
     </View>
   );

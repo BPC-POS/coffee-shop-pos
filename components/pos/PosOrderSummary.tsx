@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { OrderItem } from '@/types/Order';
 import { Order } from '@/types/Order';
-import { Ionicons } from '@expo/vector-icons'; // Import Ionicons
+import { Ionicons } from '@expo/vector-icons'; 
 import PaymentModal from './PaymentModal';
 
 interface Props {
@@ -43,7 +43,7 @@ const PosOrderSummary: React.FC<Props> = ({
 
 
    const handleQuantityChange = (productId: number, newQuantity: number) => {
-         console.log("PosOrderSummary - handleQuantityChange - productId:", productId, "newQuantity:", newQuantity);
+    console.log(orderItems);
         if (newQuantity <= 0) {
             onRemoveItem(productId);
         } else {

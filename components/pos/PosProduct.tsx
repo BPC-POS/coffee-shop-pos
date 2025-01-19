@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from 'react
 import PosProductModal from './PosProductModal';
 import { OrderItem } from '@/types/Order';
 import { Product, ProductStatus } from '@/types/Product';
-import RequireTableModal from './RequireTableModal'; // Import modal
+import RequireTableModal from './RequireTableModal'; 
 
 interface Props {
     selectedTable: string | null;
@@ -158,26 +158,26 @@ const PosProduct: React.FC<Props> = ({selectedTable, orderItems, onUpdateQuantit
    };
 
    const handleConfirm = () => {
-        if (selectedProduct) {
-           if(isCancelling) {
-                onRemoveItem(selectedProduct.id)
-               setSelectedProductId(null);
-
-           } else {
-                const newOrderItem: OrderItem = {
-                    id: Date.now(),
-                     productId: selectedProduct.id,
-                     productName: selectedProduct.name,
-                     price: selectedProduct.price,
-                     quantity: 1,
-                     note: '',
-                 };
-                 onAddItem(newOrderItem)
-                setSelectedProductId(null);
-            }
-        }
-        setModalVisible(false);
-    };
+    if (selectedProduct) {
+      if (isCancelling) {
+        onRemoveItem(selectedProduct.id);
+        setSelectedProductId(null);
+      } else {
+           const newOrderItem: OrderItem = {
+              id: Date.now(),
+              productId: selectedProduct.id,
+              productName: selectedProduct.name,
+              price: selectedProduct.price,
+              quantity: 1,
+              note: '',
+          };
+        onAddItem(newOrderItem);
+        console.log(newOrderItem);
+        setSelectedProductId(null);
+      }
+    }
+      setModalVisible(false);
+  };
 
       const handleCloseRequireTableModal = () => {
            setRequireTableModalVisible(false);

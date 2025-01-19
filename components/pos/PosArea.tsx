@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import PosTableModal from './PosTableModal';
 import { Table, TableStatus, TableArea } from '@/types/Table';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
     onTableSelect: (table: Table | null) => void;
@@ -15,16 +16,21 @@ const areas: TableArea[] = [
 ];
 
 const generateTables = (areaId: string) => {
-    return Array.from({ length: 10 }, (_, index) => ({
-        id:  Date.now() + index,
-        area: areaId,
-        name: `Bàn ${index + 1}`,
-        capacity: Math.floor(Math.random() * 4) + 2,
-        status: TableStatus.AVAILABLE,
-        isActive: true,
-         createdAt: new Date(),
-        updatedAt: new Date()
-    }));
+    return Array.from({ length: 10 }, (_, index) => {
+        const timestamp = Date.now();
+        const randomNumber = Math.floor(Math.random() * 1000); // Tạo số ngẫu nhiên từ 0-999
+        const id = Number(`${timestamp}${index}${randomNumber}`); // Kết hợp và chuyển thành number
+        return {
+            id,
+            area: areaId,
+            name: `Bàn ${index + 1}`,
+            capacity: Math.floor(Math.random() * 4) + 2,
+            status: TableStatus.AVAILABLE,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+    });
 };
 
 const tables: Table[] = [

@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
+import StaffSchedule from '@/components/staff/StaffSchedule';
 
-const SecheduleScreen = () => {
+const ScheduleScreen = () => {
   return (
     <View style={styles.container}>
        <Stack.Screen
@@ -18,8 +19,7 @@ const SecheduleScreen = () => {
         }}
       />
       <View style={styles.content}>
-      <Text style={styles.title}>Trang quản lý đơn hàng</Text>
-      {/* Nội dung của trang quản lý đơn hàng */}
+        <StaffSchedule staff={[]} />
       </View>
     </View>
   );
@@ -42,4 +42,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SecheduleScreen;
+export default ScheduleScreen;
