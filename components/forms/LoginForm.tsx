@@ -20,6 +20,14 @@ const LoginForm: React.FC = () => {
     router.push('/pos');
   };
 
+  const handleScreenWaiter = () => {  
+    router.push('/waiter');
+  }
+
+  const handleScreenBartender = () => {
+    router.push('/bartender');
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -59,6 +67,8 @@ const LoginForm: React.FC = () => {
         <Button style={styles.loginButton} onPress={handleTest}>
            <Text style={styles.textLogin}>LOGIN</Text>
         </Button>
+        <Button onPress={handleScreenBartender} style={styles.loginButton}><Text style={styles.textLogin} >Pha che</Text></Button>
+      <Button onPress={handleScreenWaiter} style={styles.loginButton}><Text style={styles.textLogin} >Phuc vu</Text></Button>
       </BlurView>
     </KeyboardAvoidingView>
   );

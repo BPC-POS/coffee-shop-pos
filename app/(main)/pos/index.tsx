@@ -7,7 +7,6 @@ import PosOrderSummary from '@/components/pos/PosOrderSummary';
 import { OrderItem, Order, OrderStatus, PaymentStatus, PaymentMethod } from '@/types/Order';
 import { Table } from '@/types/Table';
 
-
 interface Props {
     onTableSelect: (table: Table | null) => void;
 }

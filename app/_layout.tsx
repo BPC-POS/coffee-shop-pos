@@ -22,6 +22,8 @@ const Layout = () => {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(main)" options={{ headerShown: false }} />
+        <Stack.Screen name="/waiter" options={{ headerShown: false }} />
+        <Stack.Screen name="/bartender" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>
   );
