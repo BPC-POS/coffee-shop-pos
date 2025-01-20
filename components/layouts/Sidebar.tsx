@@ -12,16 +12,16 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
 
     const navigationView = (
         <View style={styles.drawerContainer}>
-          <TouchableOpacity onPress={() => router.push('/orders')}>
+          <TouchableOpacity onPress={() => router.push('/pos/orders')}>
             <Text style={styles.drawerItem}>Orders</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/products')}>
+          <TouchableOpacity onPress={() => router.push('/pos/products')}>
             <Text style={styles.drawerItem}>Products</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/pos')}>
             <Text style={styles.drawerItem}>POS</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/schedule')}>
+          <TouchableOpacity onPress={() => router.push('/pos/schedule')}>
             <Text style={styles.drawerItem}>Schedule</Text>
           </TouchableOpacity>
         </View>

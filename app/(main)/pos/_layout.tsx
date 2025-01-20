@@ -3,11 +3,12 @@ import { Stack, useRouter } from 'expo-router';
 import { View } from 'react-native';
 import Sidebar from '@/components/layouts/Sidebar'; 
 
-const MainLayout = () => {
+const PosLayout = () => {
   const router = useRouter();
 
   return (
     <View style={{ flex: 1 }}>
+      <Sidebar>  
         <Stack
           screenOptions={{
             headerShown: false,
@@ -15,9 +16,9 @@ const MainLayout = () => {
             headerTintColor: 'white',
           }}
         />
-      
+      </Sidebar>
     </View>
   );
 };
 
-export default MainLayout;
+export default PosLayout;

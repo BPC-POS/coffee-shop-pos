@@ -2,8 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { Product } from '@/types/Product';
-import ProductList from '@/components/product/ProductList';
-import { mockProducts } from '@/mock/mockProducts';
 
 const ProductsScreen = () => {
   const handleEdit = (product: Product) => {
@@ -26,12 +24,6 @@ const ProductsScreen = () => {
         }}
       />
       <View style={styles.content}>
-         {/* <ProductList
-           products={mockProducts}
-           currentCategory={'all'}
-           onEdit={handleEdit}
-           onDelete={handleDelete}
-        /> */}
       </View>
     </View>
   );
