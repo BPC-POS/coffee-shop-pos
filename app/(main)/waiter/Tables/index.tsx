@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Table, TableArea, TableStatus } from '@/types/Table';
+import { mockTable } from '@/mock/mockTable'; 
 
 interface Props {
     onTableSelect: (table: Table | null) => void;
@@ -13,13 +14,6 @@ const areas: TableArea[] = [
     { id: '4', name: 'Sân vườn', isActive: true },
 ];
 
-const tables: Table[] = [
-    { id: 1, area: '2', name: 'Bàn 1', capacity: 4, status: TableStatus.AVAILABLE, isActive: true, createdAt: new Date, updatedAt: new Date},
-    { id: 2, area: '2', name: 'Bàn 2', capacity: 6, status: TableStatus.OCCUPIED, isActive: true, createdAt: new Date, updatedAt: new Date},
-    { id: 3, area: '3', name: 'Bàn 3', capacity: 2, status: TableStatus.RESERVED, isActive: true, createdAt: new Date, updatedAt: new Date},
-    { id: 4, area: '4', name: 'Bàn 4', capacity: 4, status: TableStatus.AVAILABLE, isActive: true, createdAt: new Date, updatedAt: new Date},
-];
-
 const AreaTableScreen = () => {
     const [selectedArea, setSelectedArea] = useState<string>('1');
 
@@ -27,8 +21,8 @@ const AreaTableScreen = () => {
     
     // Lọc danh sách bàn theo khu vực
     const filteredTables = selectedArea === '1'
-        ? tables
-        : tables.filter(table => table.area === selectedArea);
+        ? mockTable
+        : mockTable.filter(table => table.area === selectedArea);
 
     const renderAreaItem = ({ item }: { item: TableArea }) => (
         <TouchableOpacity
