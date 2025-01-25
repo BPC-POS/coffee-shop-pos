@@ -134,7 +134,7 @@ const POSArea: React.FC<Props> = ({ onTableSelect }) => {
                     data={filteredTables}
                     renderItem={renderTableItem}
                     keyExtractor={item => String(item.id)}
-                    numColumns={4}
+                    numColumns={3}
                     showsVerticalScrollIndicator={false}
                 />
             </View>
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 5,
         margin: 5,
-        width: '22%',
+        width: '30%',
         alignItems: 'center',
         justifyContent: 'center',
         aspectRatio: 1,

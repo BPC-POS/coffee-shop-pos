@@ -108,8 +108,9 @@ const PosOrderSummary: React.FC<Props> = ({
                 data={orderItems}
                 renderItem={renderOrderItem}
                 keyExtractor={item => String(item.productId)}
-                style={{ maxHeight: 250 }}
+                style={{ maxHeight: 125 }}
                 showsVerticalScrollIndicator={false}
+                
             />
 
             <View style={styles.discountContainer}>

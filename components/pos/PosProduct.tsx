@@ -227,7 +227,7 @@ const PosProduct: React.FC<Props> = ({selectedTable, orderItems, onUpdateQuantit
             data={filteredProducts}
             renderItem={renderProductItem}
             keyExtractor={item => String(item.id)}
-            numColumns={4}
+            numColumns={3}
             showsVerticalScrollIndicator={false}
           />
           </View>
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     productListContainer: {
-        maxHeight: 200,
+        maxHeight: 500,
         padding: 10,
     },
     productButton: {
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
         padding: 10,
         margin: 5,
         borderRadius: 5,
-      maxWidth: '24%',
+      maxWidth: '30%',
     },
     selectedProduct: {
         borderColor: '#28a745',
