@@ -1,15 +1,19 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import AreaTableScreen from './Tables/index'; // Đảm bảo đúng đường dẫn tới AreaTableScreen
 
 const WaiterScreen = () => {
   return (
-    <View>
-      <Text>WaiterScreen
-      </Text>
+    <View style={styles.container}>
+      <AreaTableScreen />
     </View>
-  )
-}
+  );
+};
 
-export default WaiterScreen
+export default WaiterScreen;
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
