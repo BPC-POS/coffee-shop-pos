@@ -25,7 +25,7 @@ const LoginForm: React.FC = () => {
   }
 
   const handleScreenBartender = () => {
-    router.push('/bartender');
+    router.push('/(main)/bartender');
   }
 
   return (

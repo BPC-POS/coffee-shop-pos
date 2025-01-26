@@ -1,23 +1,21 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Stack } from 'expo-router';
 import { Order, OrderStatus } from '@/types/Order';
 import { mockOrders } from '@/mock/mockdata';
 import BartenderOrderList from '@/components/bartender/BartenderOrderList';
-import BartenderRecipeModal from '@/components/bartender/BartenderRecipeModal';
 import BartenderCompleteModal from '@/components/bartender/BartenderCompleteModal';
+import BartenderRecipeModal from '@/components/bartender/BartenderRecipeModal';
 import { useRouter } from 'expo-router';
 
-const BartenderScreen = () => {
+export default function PreparingOrdersScreen() {
     const router = useRouter();
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-    const [recipeModalVisible, setRecipeModalVisible] = useState(false);
     const [completeModalVisible, setCompleteModalVisible] = useState(false);
+    const [recipeModalVisible, setRecipeModalVisible] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
-    // Lọc các đơn hàng cần pha chế (status PENDING)
-    const pendingOrders = useMemo(() => {
-        return mockOrders.filter(order => order.status === OrderStatus.PENDING);
+    const preparingOrders = useMemo(() => {
+        return mockOrders.filter(order => order.status === OrderStatus.PREPARING);
     }, [mockOrders]);
 
     const handleViewRecipe = (productId: number) => {
@@ -25,49 +23,21 @@ const BartenderScreen = () => {
         setRecipeModalVisible(true);
     };
 
-    const handleStartPrepare = (order: Order) => {
-        order.status = OrderStatus.PREPARING;
-        router.push('/(main)/bartender/preparing');
-    };
-
     const handleCompletePrepare = (order: Order) => {
         setSelectedOrder(order);
         setCompleteModalVisible(true);
     };
 
-    const handleCancelOrder = (order: Order) => {
-        order.status = OrderStatus.CANCELLED;
-    };
-
     return (
         <View style={styles.container}>
-            <Stack.Screen
-                options={{
-                    title: 'Pha chế',
-                    headerStyle: {
-                        backgroundColor: '#8b4513', // Màu nâu coffee
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
-                }}
-            />
             <ScrollView style={styles.content}>
                 <BartenderOrderList
-                    orders={pendingOrders}
+                    orders={preparingOrders}
                     onViewRecipe={handleViewRecipe}
-                    onStartPrepare={handleStartPrepare}
                     onCompletePrepare={handleCompletePrepare}
-                    onCancelOrder={handleCancelOrder}
+                    showStartButton={false}
                 />
             </ScrollView>
-
-            <BartenderRecipeModal
-                visible={recipeModalVisible}
-                productId={selectedProductId}
-                onClose={() => setRecipeModalVisible(false)}
-            />
 
             <BartenderCompleteModal
                 visible={completeModalVisible}
@@ -80,11 +50,20 @@ const BartenderScreen = () => {
                     setCompleteModalVisible(false);
                     setSelectedOrder(null);
                 }}
-                onClose={() => setCompleteModalVisible(false)}
+                onClose={() => {
+                    setCompleteModalVisible(false);
+                    setSelectedOrder(null);
+                }}
+            />
+
+            <BartenderRecipeModal
+                visible={recipeModalVisible}
+                productId={selectedProductId}
+                onClose={() => setRecipeModalVisible(false)}
             />
         </View>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -94,6 +73,4 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
     },
-});
-
-export default BartenderScreen;
+}); 

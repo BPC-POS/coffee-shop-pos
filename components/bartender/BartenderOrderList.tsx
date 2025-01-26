@@ -1,15 +1,29 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Order } from '@/types/Order';
+import { Order, OrderStatus } from '@/types/Order';
 import { formatDateTime } from '@/utils/datetime';
 
 interface Props {
     orders: Order[];
     onViewRecipe: (productId: number) => void;
-    onStartPrepare: (order: Order) => void;
-    onCompletePrepare: (order: Order) => void;
+    onStartPrepare?: (order: Order) => void;
+    onCompletePrepare?: (order: Order) => void;
+    onCancelOrder?: (order: Order) => void;
+    showStartButton?: boolean;
+    showCompleteButton?: boolean;
+    showRecipeButton?: boolean;
 }
-const BartenderOrderList = ({ orders, onViewRecipe, onStartPrepare, onCompletePrepare }: Props) => {
+
+const BartenderOrderList = ({ 
+    orders, 
+    onViewRecipe, 
+    onStartPrepare, 
+    onCompletePrepare,
+    onCancelOrder,
+    showStartButton = true,
+    showCompleteButton = true,
+    showRecipeButton = true
+}: Props) => {
     return (
         <View style={styles.container}>
             {orders.map((order) => (
@@ -28,12 +42,14 @@ const BartenderOrderList = ({ orders, onViewRecipe, onStartPrepare, onCompletePr
                                 <Text style={styles.itemName}>{item.productName}</Text>
                                 <Text style={styles.itemQuantity}>x{item.quantity}</Text>
                             </View>
-                            <TouchableOpacity 
-                                style={styles.recipeButton}
-                                onPress={() => onViewRecipe(item.productId)}
-                            >
-                                <Text style={styles.recipeButtonText}>Xem công thức</Text>
-                            </TouchableOpacity>
+                            {showRecipeButton !== false && (
+                                <TouchableOpacity 
+                                    style={styles.recipeButton}
+                                    onPress={() => onViewRecipe(item.productId)}
+                                >
+                                    <Text style={styles.recipeButtonText}>Xem công thức</Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
                     ))}
                     
@@ -42,18 +58,30 @@ const BartenderOrderList = ({ orders, onViewRecipe, onStartPrepare, onCompletePr
                             Tổng tiền: {order.totalAmount?.toLocaleString()}đ
                         </Text>
                         <View style={styles.actionButtons}>
-                            <TouchableOpacity 
-                                style={[styles.button, styles.startButton]}
-                                onPress={() => onStartPrepare(order)}
-                            >
-                                <Text style={styles.buttonText}>Bắt đầu pha</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                                style={[styles.button, styles.completeButton]}
-                                onPress={() => onCompletePrepare(order)}
-                            >
-                                <Text style={styles.buttonText}>Hoàn thành</Text>
-                            </TouchableOpacity>
+                            {showStartButton && onStartPrepare && (
+                                <TouchableOpacity 
+                                    style={[styles.button, styles.startButton]}
+                                    onPress={() => onStartPrepare(order)}
+                                >
+                                    <Text style={styles.buttonText}>Bắt đầu pha</Text>
+                                </TouchableOpacity>
+                            )}
+                            {showCompleteButton !== false && onCompletePrepare && (
+                                <TouchableOpacity 
+                                    style={[styles.button, styles.completeButton]}
+                                    onPress={() => onCompletePrepare(order)}
+                                >
+                                    <Text style={styles.buttonText}>Hoàn thành</Text>
+                                </TouchableOpacity>
+                            )}
+                            {onCancelOrder && (
+                                <TouchableOpacity 
+                                    style={[styles.button, styles.cancelButton]}
+                                    onPress={() => onCancelOrder(order)}
+                                >
+                                    <Text style={styles.buttonText}>Hủy đơn</Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
                     </View>
                 </View>
@@ -159,6 +187,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 14,
         fontWeight: 'bold',
+    },
+    cancelButton: {
+        flex: 1,
+        marginLeft: 5,
+        padding: 10,
+        backgroundColor: '#dc3545',
+        borderRadius: 5,
     },
 });
 

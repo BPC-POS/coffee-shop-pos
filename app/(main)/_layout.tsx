@@ -1,23 +1,43 @@
-import React from 'react';
-import { Stack, useRouter } from 'expo-router';
-import { View } from 'react-native';
-import Sidebar from '@/components/layouts/Sidebar'; 
+import { Drawer } from 'expo-router/drawer';
 
-const MainLayout = () => {
-  const router = useRouter();
-
+export default function MainLayout() {
   return (
-    <View style={{ flex: 1 }}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            headerTransparent: true,
-            headerTintColor: 'white',
-          }}
-        />
-      
-    </View>
+    <Drawer
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#8b4513',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        drawerStyle: {
+          backgroundColor: '#fff',
+          width: 250,
+        },
+      }}
+    >
+      <Drawer.Screen
+        name="bartender/index"
+        options={{
+          drawerLabel: "Đơn hàng mới",
+          title: "Đơn hàng mới",
+        }}
+      />
+      <Drawer.Screen
+        name="bartender/preparing"
+        options={{
+          drawerLabel: "Đơn hàng đang thực hiện",
+          title: "Đơn hàng đang thực hiện",
+        }}
+      />
+      <Drawer.Screen
+        name="bartender/completed"
+        options={{
+          drawerLabel: "Đơn hàng hoàn thành",
+          title: "Đơn hàng hoàn thành",
+        }}
+      />
+    </Drawer>
   );
-};
-
-export default MainLayout;
+}
