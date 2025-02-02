@@ -1,43 +1,31 @@
-import { Drawer } from 'expo-router/drawer';
+import React from 'react';
+import { Stack } from 'expo-router';
 
 export default function MainLayout() {
   return (
-    <Drawer
+    <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: '#8b4513',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-        drawerStyle: {
-          backgroundColor: '#fff',
-          width: 250,
-        },
+        headerShown: false,  // Ẩn header chung
       }}
     >
-      <Drawer.Screen
-        name="bartender/index"
+      <Stack.Screen
+        name="bartender"
         options={{
-          drawerLabel: "Đơn hàng mới",
-          title: "Đơn hàng mới",
+          headerShown: false,
         }}
       />
-      <Drawer.Screen
-        name="bartender/preparing"
+      <Stack.Screen
+        name="pos"
         options={{
-          drawerLabel: "Đơn hàng đang thực hiện",
-          title: "Đơn hàng đang thực hiện",
+          headerShown: false,
         }}
       />
-      <Drawer.Screen
-        name="bartender/completed"
+      <Stack.Screen
+        name="waiter"
         options={{
-          drawerLabel: "Đơn hàng hoàn thành",
-          title: "Đơn hàng hoàn thành",
+          headerShown: false,
         }}
       />
-    </Drawer>
+    </Stack>
   );
 }

@@ -9,14 +9,15 @@ import { useRouter } from 'expo-router';
 
 export default function PreparingOrdersScreen() {
     const router = useRouter();
+    const [orders, setOrders] = useState(mockOrders);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [completeModalVisible, setCompleteModalVisible] = useState(false);
     const [recipeModalVisible, setRecipeModalVisible] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
     const preparingOrders = useMemo(() => {
-        return mockOrders.filter(order => order.status === OrderStatus.PREPARING);
-    }, [mockOrders]);
+        return orders.filter(order => order.status === OrderStatus.PREPARING);
+    }, [orders]);
 
     const handleViewRecipe = (productId: number) => {
         setSelectedProductId(productId);
@@ -26,6 +27,26 @@ export default function PreparingOrdersScreen() {
     const handleCompletePrepare = (order: Order) => {
         setSelectedOrder(order);
         setCompleteModalVisible(true);
+    };
+
+    const handleConfirmComplete = () => {
+        if (selectedOrder) {
+            // Cập nhật trạng thái đơn hàng
+            const updatedOrders = orders.map(o => 
+                o.id === selectedOrder.id 
+                    ? { ...o, status: OrderStatus.COMPLETED }
+                    : o
+            );
+            setOrders(updatedOrders);
+            mockOrders.forEach(o => {
+                if (o.id === selectedOrder.id) {
+                    o.status = OrderStatus.COMPLETED;
+                }
+            });
+            router.push('/(main)/bartender/completed');
+        }
+        setCompleteModalVisible(false);
+        setSelectedOrder(null);
     };
 
     return (
@@ -42,14 +63,7 @@ export default function PreparingOrdersScreen() {
             <BartenderCompleteModal
                 visible={completeModalVisible}
                 order={selectedOrder}
-                onConfirm={() => {
-                    if (selectedOrder) {
-                        selectedOrder.status = OrderStatus.COMPLETED;
-                        router.push('/(main)/bartender/completed');
-                    }
-                    setCompleteModalVisible(false);
-                    setSelectedOrder(null);
-                }}
+                onConfirm={handleConfirmComplete}
                 onClose={() => {
                     setCompleteModalVisible(false);
                     setSelectedOrder(null);
