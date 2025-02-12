@@ -1,14 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import { Stack } from 'expo-router';
-import { Product } from '@/types/Product';
+import { mockProducts } from '@/mock/mockProducts'; // Import dữ liệu giả lập
 
 const ProductsScreen = () => {
-  const handleEdit = (product: Product) => {
-  };
-  const handleDelete = (product: Product) => {
-  };
-
   return (
     <View style={styles.container}>
       <Stack.Screen
@@ -23,8 +18,21 @@ const ProductsScreen = () => {
           },
         }}
       />
-      <View style={styles.content}>
-      </View>
+
+      {/* Hiển thị danh sách sản phẩm */}
+      <FlatList
+        data={mockProducts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.productItem} onPress={() => alert(`Bạn chọn ${item.name}`)}>
+            <Image source={{ uri: item.image }} style={styles.productImage} />
+            <View style={styles.productInfo}>
+              <Text style={styles.productName}>{item.name}</Text>
+              <Text style={styles.productPrice}>{item.price} VND</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
     </View>
   );
 };
@@ -33,16 +41,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    padding: 10,
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
+  productItem: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
   },
-  title: {
-    fontSize: 24,
+  productImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 10,
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productName: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 20,
+  },
+  productPrice: {
+    fontSize: 14,
+    color: 'green',
   },
 });
 
