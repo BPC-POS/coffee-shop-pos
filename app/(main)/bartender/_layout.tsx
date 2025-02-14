@@ -65,6 +65,7 @@ const BartenderLayout: React.FC<Props> = () => {
                   {name === 'index' ? 'Đơn hàng mới' :
                    name === 'preparing/index' ? 'Đơn hàng đang thực hiện' :
                    name === 'completed/index' ? 'Đơn hàng hoàn thành' :
+                   name === 'schedule/index' ? 'Lịch làm việc' :
                    ''}
                 </Text>
               </TouchableOpacity>
@@ -101,6 +102,13 @@ const BartenderLayout: React.FC<Props> = () => {
         options={{
           drawerLabel: "Đơn hàng hoàn thành",
           title: "Đơn hàng hoàn thành",
+        }}
+      />
+      <Drawer.Screen
+        name="schedule/index"
+        options={{
+          drawerLabel: "Lịch làm việc",
+          title: "Lịch làm việc",
         }}
       />
     </Drawer>
