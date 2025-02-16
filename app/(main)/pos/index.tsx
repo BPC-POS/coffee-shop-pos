@@ -59,6 +59,7 @@ const PosScreen = () => {
           note: ''
         }
         return [...prevItems, newOrderItem];
+        
       }
     });
   };
