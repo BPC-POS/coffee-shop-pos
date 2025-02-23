@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, Modal, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, Modal, Dimensions, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Staff } from '@/types/Staff';
-// import { formatDate } from '@/utils/format';
 import { Picker } from '@react-native-picker/picker';
 import { mockStaff } from '@/mock/mockStaff';
 
-// utils/format.ts ( có thể điều chỉnh lại của CátCát)
 export const formatDate = (date: Date) => {
   return date.toLocaleDateString('vi-VN');
 };
@@ -32,6 +30,10 @@ interface ScheduleDialogProps {
   onRemove: (staffId: number) => void;
 }
 
+const { width, height } = Dimensions.get('window');
+const baseFontSize = 16;
+const responsiveFontSize = baseFontSize * (width / 375);
+
 const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   open,
   onClose,
@@ -43,14 +45,11 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
   onRemove,
 }) => {
   const [selectedStaff, setSelectedStaff] = useState<number>(0);
-
   const availableStaff = staff.filter(s => !assignedStaff.includes(s.id));
 
   const renderAssignedStaff = ({ item }: { item: number }) => {
     const staffMember = staff.find(s => s.id === item);
-    if (!staffMember) {
-      return null;
-    }
+    if (!staffMember) return null;
     return (
       <View key={item} style={styles.listItem}>
         <View style={styles.listItemText}>
@@ -61,8 +60,8 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
           <Icon name="delete" size={24} color="#E57373" />
         </TouchableOpacity>
       </View>
-    )
-  }
+    );
+  };
 
   return (
     <Modal
@@ -97,25 +96,27 @@ const ScheduleDialog: React.FC<ScheduleDialogProps> = ({
                   ))}
                 </Picker>
               </View>
-              <TouchableOpacity style={styles.addButton} onPress={() => {
-                if (selectedStaff) {
-                  onAssign(selectedStaff);
-                  setSelectedStaff(0);
-                }
-              }}
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  if (selectedStaff) {
+                    onAssign(selectedStaff);
+                    setSelectedStaff(0);
+                  }
+                }}
                 disabled={!selectedStaff}
               >
                 <Text style={styles.addButtonText}>Thêm</Text>
               </TouchableOpacity>
             </View>
-              <FlatList
-                   data={assignedStaff}
-                   renderItem={renderAssignedStaff}
-                   keyExtractor={item => String(item)}
-                   ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 10 }}>Không có nhân viên nào được phân công.</Text>}
-              />
+            <FlatList
+              data={assignedStaff}
+              renderItem={renderAssignedStaff}
+              keyExtractor={item => String(item)}
+              ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 10 }}>Không có nhân viên nào được phân công.</Text>}
+            />
           </View>
-          <TouchableOpacity onPress={onClose} style={styles.modalFooter}  >
+          <TouchableOpacity onPress={onClose} style={styles.modalFooter}>
             <Text style={styles.modalFooterText}>Đóng</Text>
           </TouchableOpacity>
         </View>
@@ -131,14 +132,12 @@ const StaffSchedule: React.FC<StaffScheduleProps> = ({ staff = mockStaff }) => {
     shift: typeof SHIFTS[0];
     date: Date;
   } | null>(null);
-
   const [schedules, setSchedules] = useState<Record<string, number[]>>({});
 
   const getWeekDates = () => {
     const dates = [];
     const startOfWeek = new Date(currentDate);
     startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1);
-
     for (let i = 0; i < 7; i++) {
       const date = new Date(startOfWeek);
       date.setDate(startOfWeek.getDate() + i);
@@ -190,7 +189,7 @@ const StaffSchedule: React.FC<StaffScheduleProps> = ({ staff = mockStaff }) => {
     <View style={styles.header}>
       <Text style={styles.headerCell}>Ca làm việc</Text>
       {getWeekDates().map((date) => (
-        <View key={date.toISOString()} style={[styles.headerCell, { minWidth: 130 }]}>
+        <View key={date.toISOString()} style={[styles.headerCell, { flexBasis: 130 }]}>
           <Text style={styles.dayName}>
             {date.toLocaleDateString('vi-VN', { weekday: 'long' })}
           </Text>
@@ -200,7 +199,7 @@ const StaffSchedule: React.FC<StaffScheduleProps> = ({ staff = mockStaff }) => {
         </View>
       ))}
     </View>
-  )
+  );
 
   const renderSchedule = ({ item: shift }: { item: typeof SHIFTS[0] }) => {
     return (
@@ -239,77 +238,80 @@ const StaffSchedule: React.FC<StaffScheduleProps> = ({ staff = mockStaff }) => {
           );
         })}
       </View>
-    )
-
-  }
-
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>
-          Lịch làm việc tuần {formatDate(getWeekDates()[0])} - {formatDate(getWeekDates()[6])}
-        </Text>
-        <View style={styles.buttonControl}>
-          <TouchableOpacity style={styles.navButton} onPress={handlePreviousWeek}>
-            <Icon name="chevron-left" size={24} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton} onPress={handleNextWeek}>
-            <Icon name="chevron-right" size={24} color="#fff" />
-          </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+      <View style={styles.container}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>
+            <Text>Lịch làm </Text>
+            <Text>{formatDate(getWeekDates()[0])} - {formatDate(getWeekDates()[6])}
+            </Text>
+          </Text>
+          <View style={styles.buttonControl}>
+            <TouchableOpacity style={styles.navButton} onPress={handlePreviousWeek}>
+              <Icon name="chevron-left" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navButton} onPress={handleNextWeek}>
+              <Icon name="chevron-right" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={styles.tableContainer}>
-          {renderWeekHeader()}
-          <FlatList
-            data={SHIFTS}
-            renderItem={renderSchedule}
-            keyExtractor={item => String(item.id)}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.tableContainer}>
+            {renderWeekHeader()}
+            <FlatList
+              data={SHIFTS}
+              renderItem={renderSchedule}
+              keyExtractor={item => String(item.id)}
+            />
+          </View>
+        </ScrollView>
+
+        {scheduleDialog && (
+          <ScheduleDialog
+            open={scheduleDialog.open}
+            onClose={() => setScheduleDialog(null)}
+            shift={scheduleDialog.shift}
+            date={scheduleDialog.date}
+            staff={staff}
+            assignedStaff={getAssignedStaff(scheduleDialog.date, scheduleDialog.shift.id)}
+            onAssign={handleAssignStaff}
+            onRemove={handleRemoveStaff}
           />
-        </View>
-      </ScrollView>
-
-
-      {scheduleDialog && (
-        <ScheduleDialog
-          open={scheduleDialog.open}
-          onClose={() => setScheduleDialog(null)}
-          shift={scheduleDialog.shift}
-          date={scheduleDialog.date}
-          staff={staff}
-          assignedStaff={getAssignedStaff(scheduleDialog.date, scheduleDialog.shift.id)}
-          onAssign={handleAssignStaff}
-          onRemove={handleRemoveStaff}
-        />
-      )}
-    </View>
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    paddingHorizontal: width < 375 ? width * 0.02 : width * 0.025,
+    paddingVertical: width * 0.025,
     backgroundColor: '#F5F5F5',
-    flex: 1, // Đảm bảo container chiếm toàn bộ không gian
+    flex: 1,
   },
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: height * 0.02,
   },
   title: {
-    fontSize: 20,
+    fontSize: responsiveFontSize * 1.2,
     fontFamily: 'Poppins-SemiBold',
     color: '#333',
   },
   buttonControl: {
     flexDirection: 'row',
-    gap: 10
+    gap: width * 0.02,
   },
   navButton: {
     backgroundColor: '#42A5F5',
-    padding: 8,
+    padding: width * 0.02,
     borderRadius: 5,
   },
   tableContainer: {
@@ -326,28 +328,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#E3F2FD',
     borderBottomWidth: 1,
-    borderBottomColor: '#BBD2E9'
+    borderBottomColor: '#BBD2E9',
   },
   headerCell: {
     flex: 1,
-    padding: 12,
+    flexBasis: 130,
+    padding: width * 0.03,
     fontFamily: 'Poppins-SemiBold',
     fontWeight: 'bold',
     textAlign: 'center',
-    fontSize: 15,
+    fontSize: responsiveFontSize,
     color: '#333',
   },
   dayName: {
     fontWeight: '500',
     fontFamily: 'Poppins-Medium',
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: responsiveFontSize * 0.9,
     color: '#666',
   },
   dayDate: {
     fontFamily: 'Poppins-Light',
     color: '#999',
-    fontSize: 13,
+    fontSize: responsiveFontSize * 0.8,
     textAlign: 'center',
   },
   row: {
@@ -358,21 +361,21 @@ const styles = StyleSheet.create({
   },
   shiftCell: {
     flex: 1,
-    padding: 12,
+    padding: width * 0.03,
   },
   shiftName: {
-    fontSize: 17,
+    fontSize: responsiveFontSize * 1.1,
     fontWeight: '600',
     fontFamily: 'Poppins-SemiBold',
   },
   shiftTime: {
-    fontSize: 14,
+    fontSize: responsiveFontSize * 0.9,
     color: '#777',
     fontFamily: 'Poppins-Light',
   },
   dayCell: {
     flex: 1,
-    padding: 12,
+    padding: width * 0.03,
     alignItems: 'center',
   },
   staffList: {
@@ -383,14 +386,14 @@ const styles = StyleSheet.create({
   },
   staffAvatarContainer: {
     backgroundColor: 'rgba(0,0,0,0.05)',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: width * 0.07,
+    height: width * 0.07,
+    borderRadius: width * 0.035,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   staffAvatar: {
-    fontSize: 14,
+    fontSize: responsiveFontSize * 0.9,
     fontWeight: 'bold',
     color: '#555',
   },
@@ -398,53 +401,54 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   modalContent: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    width: '90%',
-     maxHeight: '80%', // Giới hạn chiều cao của modal
-    overflow: 'hidden', // Ẩn nội dung tràn
+    width: width * 0.9,
+    maxWidth: 450,
+    maxHeight: height * 0.8,
+    overflow: 'hidden',
   },
   modalHeader: {
-    padding: 20,
+    padding: width * 0.05,
     backgroundColor: '#42A5F5',
     borderRadius: 12,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   modalTitle: {
     fontFamily: 'Poppins-SemiBold',
-    fontSize: 20,
+    fontSize: responsiveFontSize * 1.2,
     fontWeight: 'bold',
-    color: '#fff'
+    color: '#fff',
   },
   modalSubtitle: {
     fontFamily: 'Poppins-Light',
-    fontSize: 14,
-    color: '#eee'
+    fontSize: responsiveFontSize,
+    color: '#eee',
   },
   modalCloseButton: {
-    padding: 8
+    padding: width * 0.02,
   },
   modalBody: {
-    padding: 20,
-      maxHeight: Dimensions.get('window').height * 0.6, // Giới hạn chiều cao của modal body
-       overflow: 'scroll', // Cho phép cuộn nội dung trong modal body
+    padding: width * 0.05,
+    maxHeight: height * 0.6,
+    overflow: 'scroll',
   },
   selectStaff: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 15
+    gap: width * 0.025,
+    marginBottom: height * 0.02,
   },
   selectLabel: {
     fontFamily: 'Poppins',
-    fontSize: 17,
+    fontSize: responsiveFontSize * 1.1,
     fontWeight: '500',
     color: '#444',
   },
@@ -457,14 +461,14 @@ const styles = StyleSheet.create({
   },
   select: {
     fontFamily: 'Poppins',
-    fontSize: 15,
-    color: '#555'
+    fontSize: responsiveFontSize,
+    color: '#555',
   },
   addButton: {
     backgroundColor: '#42A5F5',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.04,
+    borderRadius: 8,
   },
   addButtonText: {
     color: '#fff',
@@ -475,7 +479,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 15,
+    padding: width * 0.04,
     borderBottomWidth: 1,
     borderBottomColor: '#E3F2FD',
   },
@@ -483,21 +487,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listItemPrimary: {
-    fontSize: 16,
+    fontSize: responsiveFontSize * 1.1,
     fontWeight: '500',
     color: '#333',
-    fontFamily: 'Poppins-Medium'
+    fontFamily: 'Poppins-Medium',
   },
   listItemSecondary: {
-    fontSize: 14,
+    fontSize: responsiveFontSize * 0.9,
     fontFamily: 'Poppins-Medium',
-    color: '#777'
+    color: '#777',
   },
   removeButtonContainer: {
-    padding: 8,
+    padding: width * 0.02,
   },
   modalFooter: {
-    padding: 20,
+    padding: width * 0.05,
     alignItems: 'center',
     backgroundColor: '#E3F2FD',
     borderTopWidth: 1,
@@ -507,11 +511,11 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
   },
   modalFooterText: {
-    fontSize: 17,
+    fontSize: responsiveFontSize * 1.1,
     fontWeight: 'bold',
     color: '#333',
     fontFamily: 'Poppins-SemiBold',
-  }
+  },
 });
 
 export default StaffSchedule;

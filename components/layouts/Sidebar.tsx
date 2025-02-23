@@ -24,6 +24,9 @@ const Sidebar: React.FC<SidebarProps> = ({ children }) => {
       <TouchableOpacity onPress={() => router.push('/pos/schedule')}>
         <Text style={styles.drawerItem}>Schedule</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/pos/attendance')}>
+        <Text style={styles.drawerItem}>Attendance</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
       <Text style={styles.logoutItem}>Đăng xuất</Text>
       </TouchableOpacity>

@@ -18,7 +18,6 @@ const PosScreen = () => {
   const [requireTableModalVisible, setRequireTableModalVisible] = useState(false);
 
   const handleTableSelect = (table: Table | null) => {
-    console.log("PosScreen - handleTableSelect - table:", table);
     setSelectedTable(table);
     setShowPosArea(false); // Ẩn POSArea khi đã chọn bàn
 
@@ -88,7 +87,6 @@ const PosScreen = () => {
 
 
   const handlePaymentComplete = (method: 'cash' | 'transfer') => {
-    console.log("PosScreen - handlePaymentComplete - payment method:", method);
     // Xử lý thanh toán ở đây
     const order = calculateOrder
     if (order) {
