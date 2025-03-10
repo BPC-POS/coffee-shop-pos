@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import StaffSchedule from '@/components/staff/StaffSchedule';
+import { mockStaff } from '@/mock/mockStaff';
 
 const ScheduleScreen = () => {
   return (
@@ -19,7 +20,7 @@ const ScheduleScreen = () => {
         }}
       />
       <View style={styles.content}>
-        <StaffSchedule staff={[]} />
+      <StaffSchedule staff={mockStaff} />
       </View>
     </View>
   );
