@@ -3,6 +3,8 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal } from 'react
 import { Table, TableArea, TableStatus } from '@/types/Table';
 import { mockTable } from '@/mock/mockTable';
 import WaiterTableModal from '@/components/waiter/WaiterTableModal';
+import OrdersScreen from '@/app/(main)/waiter/Orders/index'; // Import OrdersScreen
+
 
 interface Props {
   onTableSelect: (table: Table | null) => void;
@@ -20,6 +22,7 @@ const AreaTableScreen = () => {
   const [tables, setTables] = useState<Table[]>(mockTable);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null); // Bàn được chọn để thay đổi trạng thái
   const [isModalVisible, setIsModalVisible] = useState(false); // Hiển thị Modal
+  const [isOrderModalVisible, setIsOrderModalVisible] = useState(false); // Hiển thị Modal OrdersScreen
   const waitrTableModel = new WaiterTableModal(tables);
 
   // Lọc danh sách bàn theo khu vực
@@ -40,6 +43,15 @@ const AreaTableScreen = () => {
       setTables(updatedTables); // Cập nhật danh sách bàn
       setIsModalVisible(false); // Ẩn Modal
     }
+  };
+  // Mở popup OrdersScreen
+  const openOrderPopup = () => {
+    setIsOrderModalVisible(true);
+  };
+
+  // Đóng popup OrdersScreen
+  const closeOrderPopup = () => {
+    setIsOrderModalVisible(false);
   };
 
   const renderAreaItem = ({ item }: { item: TableArea }) => (
@@ -98,6 +110,9 @@ const AreaTableScreen = () => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.orderButton} onPress={openOrderPopup}>
+        <Text style={styles.orderButtonText}>Xem đơn hàng</Text>
+      </TouchableOpacity>
       {/* Danh sách khu vực và bàn */}
       <View style={styles.areaContainer}>
         <FlatList
@@ -118,6 +133,7 @@ const AreaTableScreen = () => {
           showsVerticalScrollIndicator={false}
         />
       </View>
+      
 
       {/* Modal chọn trạng thái */}
       <Modal
@@ -147,6 +163,21 @@ const AreaTableScreen = () => {
           </View>
         </View>
       </Modal>
+
+       {/* Modal OrdersScreen */}
+       <Modal
+        visible={isOrderModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeOrderPopup}
+      >
+        <View style={styles.fullScreenModal}>
+          <OrdersScreen />
+          <TouchableOpacity style={styles.closeButton} onPress={closeOrderPopup}>
+            <Text style={styles.closeButtonText}>Đóng</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -158,6 +189,18 @@ const styles = StyleSheet.create({
   },
   areaContainer: {
     marginBottom: 16,
+  },
+  orderButton: {
+    backgroundColor: '#28a745',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  orderButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   areaButton: {
     padding: 10,
@@ -219,6 +262,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  fullScreenModal: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: '#dc3545',
+    padding: 10,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
   modalContent: {
     width: '80%',

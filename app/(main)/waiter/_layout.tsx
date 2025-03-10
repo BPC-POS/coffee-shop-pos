@@ -1,14 +1,14 @@
 import React from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { View } from 'react-native';
-import Sidebar from '@/components/layouts/Sidebar'; 
+import WaiterSidebar from '@/components/layouts/WaiterSidebar'; 
 
 const WaiterLayout = () => {
   const router = useRouter();
 
   return (
     <View style={{ flex: 1 }}>
-      <Sidebar>
+      <WaiterSidebar>
         <Stack
             screenOptions={{
               headerShown: false,
@@ -16,7 +16,7 @@ const WaiterLayout = () => {
               headerTintColor: 'white',
             }}
           />
-      </Sidebar>
+      </WaiterSidebar>
     </View>
   );
 };
