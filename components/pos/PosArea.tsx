@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
-import PosTableModal from './PosTableModal';
+import PosTableModal from './Modal/PosTableModal';
 import { Table, TableStatus, TableArea } from '@/types/Table';
 import { v4 as uuidv4 } from 'uuid';
 

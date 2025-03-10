@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'r
 import { OrderItem } from '@/types/Order';
 import { Order } from '@/types/Order';
 import { Ionicons } from '@expo/vector-icons'; 
-import PaymentModal from './PaymentModal';
+import PaymentModal from './Modal/PaymentModal';
 
 interface Props {
     selectedTable: string | null;

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from 'react-native';
-import PosProductModal from './PosProductModal';
+import PosProductModal from './Modal/PosProductModal';
 import { OrderItem } from '@/types/Order';
 import { Product, ProductStatus } from '@/types/Product';
-import RequireTableModal from './RequireTableModal'; 
+import RequireTableModal from './Modal/RequireTableModal'; 
 
 interface Props {
     selectedTable: string | null;
