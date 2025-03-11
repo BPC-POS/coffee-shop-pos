@@ -1,12 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Stack } from 'expo-router';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Order, OrderStatus } from '@/types/Order';
 import { mockOrders } from '@/mock/mockdata';
 import BartenderOrderList from '@/components/bartender/BartenderOrderList';
 import BartenderRecipeModal from '@/components/bartender/BartenderRecipeModal';
 import BartenderCompleteModal from '@/components/bartender/BartenderCompleteModal';
-import { useRouter } from 'expo-router';
+import BartenderNotificationModal from '@/components/bartender/BartenderNotificationModal';
 
 const BartenderScreen = () => {
     const router = useRouter();
@@ -14,11 +15,22 @@ const BartenderScreen = () => {
     const [recipeModalVisible, setRecipeModalVisible] = useState(false);
     const [completeModalVisible, setCompleteModalVisible] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+    const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+    const [prevOrderCount, setPrevOrderCount] = useState(mockOrders.length);
+    const [hasNewOrder, setHasNewOrder] = useState(false);
 
-    // Lọc các đơn hàng cần pha chế (status PENDING)
+    // Lọc đơn hàng PENDING
     const pendingOrders = useMemo(() => {
         return mockOrders.filter(order => order.status === OrderStatus.PENDING);
     }, [mockOrders]);
+
+    useEffect(() => {
+        if (pendingOrders.length > prevOrderCount) {
+            Alert.alert('Thông báo', 'Có đơn hàng mới cần pha chế!', [{ text: 'OK' }]);
+            setHasNewOrder(true);
+        }
+        setPrevOrderCount(pendingOrders.length);
+    }, [pendingOrders]);
 
     const handleViewRecipe = (productId: number) => {
         setSelectedProductId(productId);
@@ -44,13 +56,22 @@ const BartenderScreen = () => {
             <Stack.Screen
                 options={{
                     title: 'Pha chế',
-                    headerStyle: {
-                        backgroundColor: '#8b4513', // Màu nâu coffee
-                    },
+                    headerStyle: { backgroundColor: '#8b4513' },
                     headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    },
+                    headerTitleStyle: { fontWeight: 'bold' },
+                    headerRight: () => (
+                        <TouchableOpacity onPress={() => {
+                            setIsNotificationVisible(true);
+                            setHasNewOrder(false);
+                        }}>
+                            <Ionicons 
+                                name={hasNewOrder ? 'notifications' : 'notifications-outline'} 
+                                size={24} 
+                                color="white" 
+                                style={{ marginRight: 10 }} 
+                            />
+                        </TouchableOpacity>
+                    ),
                 }}
             />
             <ScrollView style={styles.content}>
@@ -82,18 +103,19 @@ const BartenderScreen = () => {
                 }}
                 onClose={() => setCompleteModalVisible(false)}
             />
+
+            <BartenderNotificationModal
+                isVisible={isNotificationVisible}
+                onClose={() => setIsNotificationVisible(false)}
+                notifications={pendingOrders}
+            />
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    content: {
-        flex: 1,
-    },
+    container: { flex: 1, backgroundColor: '#fff' },
+    content: { flex: 1 },
 });
 
 export default BartenderScreen;
