@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ActivityIndicator } from 'react-native';
 import PosProductModal from './Modal/PosProductModal';
 import { OrderItem } from '@/types/Order';
 import { Product, ProductStatus } from '@/types/Product';
-import RequireTableModal from './Modal/RequireTableModal'; 
+import RequireTableModal from './Modal/RequireTableModal';
+import { getProducts } from '@/api/product';
+import { formatCurrency } from '@/utils/format';
 
 interface Props {
     selectedTable: string | null;
@@ -11,116 +13,9 @@ interface Props {
     onUpdateQuantity: (productId: number, newQuantity: number) => void;
     onRemoveItem: (productId: number) => void;
     onCheckout: () => void;
-    onAddItem: (item : OrderItem) => void;
+    onAddItem: (item: OrderItem) => void;
      onOpenRequireTableModal : () => void;
 }
-
-const products: Product[] = [
-    {
-        id: 1,
-        name: 'Cafe Đen',
-        price: 25000,
-        image: 'https://product.hstatic.net/200000543909/product/1691482381_caphe_den_da_1_56c83f40a6914615a4c37af8504e00d4_master.png',
-        category: 'Cafe',
-        description: '',
-        status: ProductStatus.ACTIVE,
-        size: [],
-        isAvailable: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: 2,
-        name: 'Cafe Sữa',
-        price: 30000,
-        image: 'https://product.hstatic.net/200000543909/product/1691482505_caphe_sua_da_1_6e3d62c44590445c995e892a0f2c24d5_master.png',
-          category: 'Cafe',
-        description: '',
-        status: ProductStatus.ACTIVE,
-          size: [],
-        isAvailable: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: 3,
-        name: 'Bạc Xỉu',
-        price: 32000,
-        image: 'https://product.hstatic.net/200000543909/product/1691482577_bacxiu_1_232c4552292241d293d589a024e0d209_master.png',
-           category: 'Cafe',
-        description: '',
-        status: ProductStatus.ACTIVE,
-          size: [],
-        isAvailable: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: 4,
-        name: 'Trà đào',
-        price: 40000,
-        image: 'https://product.hstatic.net/200000543909/product/1691482472_trasuadao_1_64873ff999184421b24b992e7c50c627_master.png',
-           category: 'Trà',
-        description: '',
-        status: ProductStatus.ACTIVE,
-          size: [],
-        isAvailable: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: 5,
-        name: 'Trà tắc',
-        price: 25000,
-        image: 'https://product.hstatic.net/200000543909/product/1691482544_tratac_1_0165d4439f3b4248bc875173c119a554_master.png',
-           category: 'Trà',
-        description: '',
-        status: ProductStatus.ACTIVE,
-          size: [],
-        isAvailable: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: 6,
-        name: 'Nước ngọt',
-        price: 20000,
-        image: 'https://product.hstatic.net/200000543909/product/1691482714_nuocngot_1_b23263805f174243a1c327654766e423_master.png',
-        category: 'Khác',
-        description: '',
-        status: ProductStatus.ACTIVE,
-          size: [],
-        isAvailable: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-     {
-        id: 7,
-        name: 'Đá Xay Chocolate',
-        price: 50000,
-       image: 'https://product.hstatic.net/200000543909/product/1691482651_daxaychocolate_1_07245b6a9c744376bc92814b6f769a3d_master.png',
-       category: 'Đá xay',
-        description: '',
-        status: ProductStatus.ACTIVE,
-          size: [],
-        isAvailable: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: 8,
-         name: 'Sữa Chua Việt Quất',
-        price: 45000,
-        image: 'https://product.hstatic.net/200000543909/product/1691482624_suachua_1_3f902d49268e4710b043a5b015b9239c_master.png',
-         category: 'Sữa chua',
-        description: '',
-        status: ProductStatus.ACTIVE,
-          size: [],
-        isAvailable: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-];
 
 const categories = ['Tất cả', 'Cafe', 'Trà', 'Đá xay', 'Sữa chua', 'Khác'];
 
@@ -129,7 +24,33 @@ const PosProduct: React.FC<Props> = ({selectedTable, orderItems, onUpdateQuantit
     const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
-      const [requireTableModalVisible, setRequireTableModalVisible] = useState(false);
+    const [requireTableModalVisible, setRequireTableModalVisible] = useState(false);
+
+    const [products, setProducts] = useState<Product[]>([]); 
+    const [loading, setLoading] = useState(true); 
+    const [error, setError] = useState<string | null>(null); 
+
+    useEffect(() => {
+        fetchProductsData();
+    }, []);
+
+    const fetchProductsData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await getProducts();
+            if (response.status >= 200 && response.status < 300) {
+                setProducts(response.data);
+            } else {
+                setError(`Lỗi khi tải dữ liệu sản phẩm. Status code: ${response.status}`);
+            }
+        } catch (error: any) {
+            setError("Lỗi kết nối hoặc lỗi không xác định khi tải dữ liệu sản phẩm.");
+            console.error("Error fetching products:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
     const filteredProducts = products.filter(product =>
@@ -167,7 +88,7 @@ const PosProduct: React.FC<Props> = ({selectedTable, orderItems, onUpdateQuantit
               id: Date.now(),
               productId: selectedProduct.id,
               productName: selectedProduct.name,
-              price: selectedProduct.price,
+              price: Number(selectedProduct.price), 
               quantity: 1,
               note: '',
           };
@@ -202,11 +123,11 @@ const PosProduct: React.FC<Props> = ({selectedTable, orderItems, onUpdateQuantit
         >
           <Image
               style={styles.productImage}
-              source={{uri: item.image}}
+              source={{uri: item.meta.image_url}} 
           />
             <View style={styles.productInfo}>
                 <Text style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productPrice}>{item.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}</Text>
+                <Text style={styles.productPrice}>{formatCurrency(Number(item.price))}</Text>
             </View>
 
         </TouchableOpacity>
@@ -223,13 +144,19 @@ const PosProduct: React.FC<Props> = ({selectedTable, orderItems, onUpdateQuantit
             />
           </View>
           <View style={styles.productListContainer}>
-          <FlatList
-            data={filteredProducts}
-            renderItem={renderProductItem}
-            keyExtractor={item => String(item.id)}
-            numColumns={3}
-            showsVerticalScrollIndicator={false}
-          />
+          {loading ? (
+                <ActivityIndicator size="large" color="#007bff" />
+            ) : error ? (
+                <Text style={{ color: 'red', textAlign: 'center', marginTop: 20 }}>{error}</Text>
+            ) : (
+                <FlatList
+                    data={filteredProducts}
+                    renderItem={renderProductItem}
+                    keyExtractor={item => String(item.id)}
+                    numColumns={3}
+                    showsVerticalScrollIndicator={false}
+                />
+            )}
           </View>
         <View style={styles.orderSummaryContainer}>
         </View>

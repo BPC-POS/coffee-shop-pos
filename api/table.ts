@@ -1,18 +1,24 @@
 import axios, {AxiosResponse, AxiosInstance} from "axios";
-import { Table, TableArea } from "@/types/table";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Table, TableArea } from "@/types/Table";
+import { REACT_PUBLIC_API_AUTH_URL } from '@env';
 
 const tableApi: AxiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL,
+    baseURL: REACT_PUBLIC_API_AUTH_URL, 
     headers: {
       'Content-Type': 'application/json',
     },
 });
 
 tableApi.interceptors.request.use(
-  (config) => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken'); 
+      if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
     return config;
   },
@@ -26,7 +32,7 @@ const createTable = async (tableData: {
   capacity: number;
   notes: string;
   status: number;
-  area_id: number; 
+  areaId: number; 
 }): Promise<AxiosResponse> => {
   try {
       const response: AxiosResponse = await tableApi.post('/tables', tableData);
@@ -62,12 +68,12 @@ const updateTable = async (tableData: {
   id: number;
   name: string;
   capacity: number;
-  notes: string; 
+  notes: string;
   status: number;
   areaId: number; 
-}): Promise<AxiosResponse<Table>> => { 
+}): Promise<AxiosResponse<Table>> => {
   try {
-    const response: AxiosResponse<Table> = await tableApi.patch(`/tables/${tableData.id}`, tableData); 
+    const response: AxiosResponse<Table> = await tableApi.patch(`/tables/${tableData.id}`, tableData);
     return response;
   } catch (error: unknown) {
     console.error("Error updating table:", error);
@@ -126,4 +132,3 @@ const deleteTableArea = async (areaId: number): Promise<AxiosResponse> => {
 }
 
 export { tableApi, createTable, getTables, getTableById, updateTable, deleteTable, getTableAreas, createTableArea, updateTableArea, deleteTableArea };
-

@@ -17,6 +17,9 @@
         "backgroundColor": "#ffffff"
       }
     },
+    "extra": {
+      "REACT_PUBLIC_API_AUTH_URL": "https://bpc-pos-app-api.nibies.space"
+    },
     "web": {
       "bundler": "metro",
       "output": "static",

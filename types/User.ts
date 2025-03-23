@@ -51,3 +51,43 @@ export interface UserFilter {
   startDate?: Date;
   endDate?: Date;
 }
+
+export interface Member {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  avatar: null;
+  email: string;
+  phone_number: string;
+  gender: number; 
+  day_of_birth: string;
+  token: null; 
+  name: string;
+  status: number; 
+  first_login: null;
+  meta: null;
+  employees?: Employee[]; 
+}
+
+export interface Employee {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  name: string;
+  email: string;
+  phone_number: string;
+  role_id: number;
+  status: number;
+  meta: null;
+  member_id: number;
+}
+
+export interface Role {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  name: string;
+  status: number; 
+  description: string;
+  meta: Record<string, any>;
+}

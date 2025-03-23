@@ -1,8 +1,9 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { Category } from '@/types/product';
+import { Category } from '@/types/Product';
+import { REACT_PUBLIC_API_AUTH_URL } from '@env';
 
 const categoryApi: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL,
+  baseURL: process.env.REACTREACT_PUBLIC_API_AUTH_URL,
   headers: {
     'Content-Type': 'application/json',
   },

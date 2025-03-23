@@ -5,7 +5,7 @@ import POSArea from '@/components/pos/PosArea';
 import PosProduct from '@/components/pos/PosProduct';
 import PosOrderSummary from '@/components/pos/PosOrderSummary';
 import { OrderItem, Order, OrderStatus, PaymentStatus, PaymentMethod } from '@/types/Order';
-import { Table, TableStatus } from '@/types/Table'; 
+import { Table, TableStatus, TableArea } from "@/types/Table"; 
 import { Ionicons } from '@expo/vector-icons';
 import NotificationModal from '@/components/pos/Modal/NotificationModal';
 
@@ -117,9 +117,9 @@ const PosScreen = () => {
 
   const handleOpenNotificationModal = () => {
     const fakeUpdatedTables: Table[] = [
-      { id: 101, name: 'Bàn 101', capacity: 4, status: TableStatus.AVAILABLE, area: 'VIP', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 102, name: 'Bàn 102', capacity: 2, status: TableStatus.OCCUPIED, area: 'VIP', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-      { id: 103, name: 'Bàn 103', capacity: 6, status: TableStatus.AVAILABLE, area: 'VIP', isActive: true, createdAt: new Date(), updatedAt: new Date() },
+      { id: 101, name: 'Bàn 101', capacity: 4, status: TableStatus.AVAILABLE, areaId: 1, area: TableArea.VIP, isActive: true, meta: {}, createdAt: new Date(), updatedAt: new Date() },
+      { id: 102, name: 'Bàn 102', capacity: 2, status: TableStatus.OCCUPIED, areaId: 1, area: TableArea.VIP, isActive: true, meta: {}, createdAt: new Date(), updatedAt: new Date() },
+      { id: 103, name: 'Bàn 103', capacity: 6, status: TableStatus.AVAILABLE, areaId: 1, area: TableArea.VIP, isActive: true, meta: {}, createdAt: new Date(), updatedAt: new Date() },
     ];
     setUpdatedTables(fakeUpdatedTables);
     setIsNotificationModalVisible(true);

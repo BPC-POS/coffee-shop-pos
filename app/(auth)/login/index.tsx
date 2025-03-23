@@ -1,7 +1,6 @@
 import React from 'react';
 import LoginForm from '@/components/forms/LoginForm';
 import { ImageBackground, View, StyleSheet } from 'react-native';
-import { BlurView } from 'expo-blur';
 
 const LoginScreen = () => {
     return (

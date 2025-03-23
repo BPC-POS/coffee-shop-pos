@@ -1,18 +1,24 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
-import { Member } from "@/types/user";
+import { Member } from "@/types/User";
+import { REACT_PUBLIC_API_AUTH_URL } from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const memberApi: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL, 
+  baseURL: `${REACT_PUBLIC_API_AUTH_URL}`,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
 memberApi.interceptors.request.use(
-  (config) => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken'); 
+      if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
     return config;
   },
@@ -20,6 +26,16 @@ memberApi.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+const getMe = async (): Promise<AxiosResponse<Member>> => {
+  try {
+    const response: AxiosResponse<Member> = await memberApi.get("/members/me");
+    return response;
+  } catch (error: unknown) {
+    console.error("Error fetching member profile (me):", error);
+    throw error;
+  }
+};
 
 const getMembers = async (): Promise<AxiosResponse<Member[]>> => { 
   try {
@@ -31,7 +47,7 @@ const getMembers = async (): Promise<AxiosResponse<Member[]>> => {
   }
 };
 
-const createMember = async (memberData: Omit<Member, 'id' | 'createdAt' | 'updatedAt' | 'password' > & { password?: string }): Promise<AxiosResponse<Member>> => { // Chấp nhận Member interface, loại bỏ id và các trường tự động, password là optional khi update
+const createMember = async (memberData: Omit<Member, 'id' | 'createdAt' | 'updatedAt' | 'password' > & { password?: string }): Promise<AxiosResponse<Member>> => {
   try {
     const response: AxiosResponse<Member> = await memberApi.post("/members", memberData);
     return response;
@@ -71,4 +87,4 @@ const deleteMember = async (id: number): Promise<void> => {
   }
 };
 
-export { memberApi, getMembers, createMember, getMemberById, updateMember, deleteMember };
+export { memberApi, getMembers, createMember, getMemberById, updateMember, deleteMember, getMe };

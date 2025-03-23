@@ -1,25 +1,30 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { REACT_PUBLIC_API_AUTH_URL } from '@env';
 
 const productApi: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL,
+  baseURL: `${REACT_PUBLIC_API_AUTH_URL}`,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 const imageApi: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_MEDIAFILE_URL,
+  baseURL: `${REACT_PUBLIC_API_AUTH_URL}`,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Thêm interceptor cho imageApi
 imageApi.interceptors.request.use(
-  (config) => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken'); 
+      if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
     return config;
   },
@@ -29,10 +34,14 @@ imageApi.interceptors.request.use(
 );
 
 productApi.interceptors.request.use(
-  (config) => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken'); 
+      if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
     return config;
   },
@@ -104,12 +113,11 @@ const createProduct = async (productData: ProductData): Promise<AxiosResponse> =
   console.log('Request data:', productData);
   
   try {
-    // Đảm bảo categories là mảng các số nguyên
     const sanitizedProductData = {
       ...productData,
       categories: productData.categories.map(categoryId => 
         typeof categoryId === 'string' ? parseInt(categoryId, 10) : categoryId
-      ).filter(id => !isNaN(id)) // Loại bỏ các giá trị NaN
+      ).filter(id => !isNaN(id))
     };
     
     const response: AxiosResponse = await productApi.post('/products', sanitizedProductData);
@@ -128,10 +136,7 @@ const updateProduct = async (productId: number, productData: Partial<ProductData
   console.log('Request data:', productData);
   
   try {
-    // Tạo một bản sao của productData để tránh thay đổi dữ liệu gốc
     const sanitizedProductData: Partial<ProductData> = { ...productData };
-
-    // Xử lý categories nếu có
     if (sanitizedProductData.categories) {
       sanitizedProductData.categories = (Array.isArray(sanitizedProductData.categories) 
         ? sanitizedProductData.categories 
@@ -141,7 +146,6 @@ const updateProduct = async (productId: number, productData: Partial<ProductData
       ).filter((id: number) => !isNaN(id));
     }
 
-    // Xử lý attributes nếu có
     if (sanitizedProductData.attributes) {
       sanitizedProductData.attributes = (Array.isArray(sanitizedProductData.attributes)
         ? sanitizedProductData.attributes
@@ -153,7 +157,6 @@ const updateProduct = async (productId: number, productData: Partial<ProductData
         }));
     }
 
-    // Xử lý variants nếu có
     if (sanitizedProductData.variants) {
       sanitizedProductData.variants = (Array.isArray(sanitizedProductData.variants)
         ? sanitizedProductData.variants
@@ -172,7 +175,6 @@ const updateProduct = async (productId: number, productData: Partial<ProductData
       }));
     }
 
-    // Xử lý meta nếu có
     if (sanitizedProductData.meta) {
       sanitizedProductData.meta = {
         ...sanitizedProductData.meta,
@@ -182,7 +184,6 @@ const updateProduct = async (productId: number, productData: Partial<ProductData
       };
     }
 
-    // Xử lý các trường số
     if (sanitizedProductData.price !== undefined) {
       sanitizedProductData.price = Number(sanitizedProductData.price) || 0;
     }
@@ -227,15 +228,11 @@ const getProductById = async (productId: number): Promise<AxiosResponse> => {
 
   const uploadImage = async (formData: FormData): Promise<AxiosResponse> => {
     try {
-      // Lấy token xác thực
       const authToken = localStorage.getItem('authToken');
-      
-      // Chuẩn bị headers
-      const headers: Record<string, string> = {
+            const headers: Record<string, string> = {
         'Content-Type': 'multipart/form-data',
       };
       
-      // Thêm token nếu có
       if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`;
       }

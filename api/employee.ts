@@ -1,5 +1,5 @@
 import axios, { AxiosResponse, AxiosInstance } from 'axios';
-import { Staff } from '@/types/staff';
+import { Staff } from '@/types/Staff';
 
 const employeeApi: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL,

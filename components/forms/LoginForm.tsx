@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { 
-  View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet, Dimensions 
+import React, { useState, useEffect } from 'react';
+import {
+  View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet, Dimensions, Alert
 } from 'react-native';
 import Input from '../ui/Input';
 import Button from '../ui/Button';
@@ -8,28 +8,115 @@ import IconButton from '../ui/IconButton';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
+import { signIn } from '../../api/auth';
+import { getMe } from '../../api/member';
+import { getRole } from '../../api/role';
+import { Role } from '../../types/User';
 
 const { width, height } = Dimensions.get('window');
 
 const LoginForm: React.FC = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [roles, setRoles] = useState<Role[]>([]); 
+  const [loadingRoles, setLoadingRoles] = useState<boolean>(true); 
+  const [errorRoles, setErrorRoles] = useState<unknown>(null); 
+
+  useEffect(() => {
+    const fetchRolesData = async () => {
+      setLoadingRoles(true);
+      setErrorRoles(null);
+      try {
+        const response = await getRole();
+        setRoles(response.data);
+        setLoadingRoles(false);
+      } catch (error) {
+        setErrorRoles(error);
+        setLoadingRoles(false);
+        console.error("Error fetching roles:", error);
+        Alert.alert("Error Fetching Roles", "Failed to load roles from server."); 
+      }
+    };
+
+    fetchRolesData();
+  }, []); 
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleLogin = () => {
-    router.push('/pos');
+  const getRoleNameFromId = (roleId: number | null): string | null => {
+    if (roleId === null || !roles) {
+      return null;
+    }
+    const foundRole = roles.find(role => role.id === roleId);
+    return foundRole ? foundRole.name : null;
   };
 
-  const handleScreenWaiter = () => {  
-    router.push('/waiter');
+
+  const handleLogin = async () => {
+    try {
+      const signInResponse = await signIn(email, password);
+
+      if (signInResponse.status >= 200 && signInResponse.status < 300) {
+        try {
+          const memberMeResponse = await getMe();
+          const memberData = memberMeResponse.data;
+
+          const roleId = memberData.employees && memberData.employees.length > 0
+            ? memberData.employees[0].role_id
+            : null;
+
+          const roleName = getRoleNameFromId(roleId);
+
+          if (roleName) {
+            switch (roleName.toUpperCase()) { 
+              case "CASHIER":
+                router.push('/pos');
+                break;
+              case "BARTENDER":
+                router.push('/bartender');
+                break;
+              case "WAITER":
+                router.push('/waiter');
+                break;
+              default:
+                console.warn(`Unknown role: ${roleName}. Redirecting to default screen.`);
+                router.push('/pos');
+                Alert.alert("Unknown Role", `Your role "${roleName}" is not recognized. Please contact administrator.`);
+            }
+          } else {
+            console.warn("No role name found for member.");
+            router.push('/pos');
+            Alert.alert("No Role Assigned", "No role was assigned to your account. Please contact administrator.");
+          }
+
+        } catch (meError) {
+          console.error("Error fetching member profile after login:", meError);
+          Alert.alert("Profile Error", "Failed to fetch your profile after login. Please try again.");
+          router.push('/pos');
+        }
+
+      } else {
+        console.error("Login failed:", signInResponse);
+        Alert.alert("Login Failed", "Invalid email or password. Please try again.");
+      }
+    } catch (loginError: any) {
+      console.error("Login error:", loginError);
+      Alert.alert("Login Error", "Could not connect to server. Please check your internet connection and try again.");
+    }
   };
 
-  const handleScreenBartender = () => {
-    router.push('/(main)/bartender');
-  };
+  if (loadingRoles) {
+    return <Text>Loading Roles...</Text>; 
+  }
+
+  if (errorRoles) {
+    return <Text>Error loading roles: {errorRoles instanceof Error ? errorRoles.message : 'Unknown error'}</Text>; 
+  }
+
 
   return (
     <KeyboardAvoidingView
@@ -44,7 +131,13 @@ const LoginForm: React.FC = () => {
         <Text style={styles.title}>Welcome Back</Text>
 
         <View style={styles.inputWrapper}>
-          <Input startIcon="account-circle" label="Email/Phone Number" className="text-white" />
+          <Input
+            startIcon="account-circle"
+            label="Email/Phone Number"
+            className="text-white"
+            value={email}
+            onChangeText={setEmail}
+          />
         </View>
 
         <View style={styles.passwordInputContainer}>
@@ -53,7 +146,9 @@ const LoginForm: React.FC = () => {
               startIcon="key"
               label="Password"
               type={showPassword ? 'text' : 'password'}
-              className="text-white" 
+              className="text-white"
+              value={password}
+              onChangeText={setPassword}
             />
           </View>
           <IconButton onPress={togglePasswordVisibility} style={styles.iconButton}>
@@ -68,14 +163,6 @@ const LoginForm: React.FC = () => {
         <Button style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.textLogin}>LOGIN</Text>
         </Button>
-
-        <Button onPress={handleScreenBartender} style={styles.loginButton}>
-          <Text style={styles.textLogin}>Pha chế</Text>
-        </Button>
-
-        <Button onPress={handleScreenWaiter} style={styles.loginButton}>
-          <Text style={styles.textLogin}>Phục vụ</Text>
-        </Button>
       </BlurView>
     </KeyboardAvoidingView>
   );
@@ -89,13 +176,13 @@ const styles = StyleSheet.create({
   },
   blurContainer: {
     padding: 20,
-    width: width * 0.9, // Chiếm 90% màn hình
+    width: width * 0.9,
     maxWidth: 400,
-    height: height * 0.55, // Chiếm 55% chiều cao màn hình
+    height: height * 0.55,
     borderRadius: 20,
   },
   title: {
-    fontSize: width * 0.08, // Responsive font size
+    fontSize: width * 0.08,
     marginBottom: 22,
     color: 'white',
     textAlign: 'center',
@@ -125,8 +212,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Bold',
     fontSize: 18,
     borderRadius: 10,
-    marginTop: 10, // Thêm khoảng cách giữa các nút
-    paddingVertical: height * 0.015, // Điều chỉnh kích thước nút theo màn hình
+    marginTop: 10,
+    paddingVertical: height * 0.015,
   },
   textLogin: {
     color: 'white',
