@@ -14,11 +14,11 @@ export interface Table {
 }
 
 export enum TableStatus {
-  AVAILABLE = 'available',
-  OCCUPIED = 'occupied',
-  RESERVED = 'reserved',
-  CLEANING = 'cleaning',
-  MAINTENANCE = 'maintenance'
+  AVAILABLE = 1,
+  OCCUPIED = 2,
+  RESERVED = 3,
+  CLEANING = 4,
+  MAINTENANCE = 5
 }
 
 export interface CreateTableDTO {
