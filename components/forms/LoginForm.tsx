@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import {
   View, Text, TouchableOpacity, KeyboardAvoidingView, Platform, StyleSheet, Dimensions, Alert
 } from 'react-native';
@@ -10,8 +10,8 @@ import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { signIn } from '../../api/auth';
 import { getMe } from '../../api/member';
-import { getRole } from '../../api/role';
-import { Role } from '../../types/User';
+import { getRoles } from '../../api/role';
+import { Role } from '@/types/User';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,28 +20,10 @@ const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [roles, setRoles] = useState<Role[]>([]); 
-  const [loadingRoles, setLoadingRoles] = useState<boolean>(true); 
-  const [errorRoles, setErrorRoles] = useState<unknown>(null); 
-
-  useEffect(() => {
-    const fetchRolesData = async () => {
-      setLoadingRoles(true);
-      setErrorRoles(null);
-      try {
-        const response = await getRole();
-        setRoles(response.data);
-        setLoadingRoles(false);
-      } catch (error) {
-        setErrorRoles(error);
-        setLoadingRoles(false);
-        console.error("Error fetching roles:", error);
-        Alert.alert("Error Fetching Roles", "Failed to load roles from server."); 
-      }
-    };
-
-    fetchRolesData();
-  }, []); 
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loadingRoles, setLoadingRoles] = useState<boolean>(false);
+  const [errorRoles, setErrorRoles] = useState<unknown>(null);
+  const [memberData, setMemberData] = useState<any>(null); 
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -55,47 +37,67 @@ const LoginForm: React.FC = () => {
     return foundRole ? foundRole.name : null;
   };
 
+  useEffect(() => {
+    if (roles && roles.length > 0 && memberData) {
+      const roleId = memberData.employees && memberData.employees.length > 0
+        ? memberData.employees[0].role_id
+        : null;
+      const roleName = getRoleNameFromId(roleId);
+
+      if (roleName) {
+        switch (roleName.toUpperCase()) {
+          case "CASHIER":
+            router.push('/pos');
+            break;
+          case "BARTENDER":
+            router.push('/bartender');
+            break;
+          case "WAITER":
+            router.push('/waiter');
+            break;
+          default:
+            console.warn(`Unknown role: ${roleName}. Redirecting to default screen.`);
+            router.push('/pos');
+            Alert.alert("Unknown Role", `Your role "${roleName}" is not recognized.`);
+        }
+      } else {
+        console.warn("No role name found for member.");
+        router.push('/pos');
+        Alert.alert("No Role Assigned", "No role was assigned to your account.");
+      }
+    }
+  }, [roles, memberData, router]);
 
   const handleLogin = async () => {
     try {
       const signInResponse = await signIn(email, password);
 
       if (signInResponse.status >= 200 && signInResponse.status < 300) {
-        try {
-          const memberMeResponse = await getMe();
-          const memberData = memberMeResponse.data;
+        setLoadingRoles(true);
+        setErrorRoles(null);
 
-          const roleId = memberData.employees && memberData.employees.length > 0
-            ? memberData.employees[0].role_id
+        try {
+          const rolesResponse = await getRoles();
+          setRoles(rolesResponse.data); 
+
+          const memberMeResponse = await getMe();
+          const memberMeData = memberMeResponse.data;
+          setMemberData(memberMeData);
+
+
+          const roleId = memberMeData.employees && memberMeData.employees.length > 0
+            ? memberMeData.employees[0].role_id
             : null;
 
           const roleName = getRoleNameFromId(roleId);
 
-          if (roleName) {
-            switch (roleName.toUpperCase()) { 
-              case "CASHIER":
-                router.push('/pos');
-                break;
-              case "BARTENDER":
-                router.push('/bartender');
-                break;
-              case "WAITER":
-                router.push('/waiter');
-                break;
-              default:
-                console.warn(`Unknown role: ${roleName}. Redirecting to default screen.`);
-                router.push('/pos');
-                Alert.alert("Unknown Role", `Your role "${roleName}" is not recognized. Please contact administrator.`);
-            }
-          } else {
-            console.warn("No role name found for member.");
-            router.push('/pos');
-            Alert.alert("No Role Assigned", "No role was assigned to your account. Please contact administrator.");
-          }
+          setLoadingRoles(false);
 
-        } catch (meError) {
-          console.error("Error fetching member profile after login:", meError);
-          Alert.alert("Profile Error", "Failed to fetch your profile after login. Please try again.");
+        } catch (fetchRolesOrMeError) {
+          setLoadingRoles(false);
+          console.error("Error fetching roles or member profile after login:", fetchRolesOrMeError);
+          setErrorRoles(fetchRolesOrMeError);
+          Alert.alert("Fetch Error", "Failed to fetch roles or profile after login. Please try again.");
           router.push('/pos');
         }
 
@@ -110,13 +112,12 @@ const LoginForm: React.FC = () => {
   };
 
   if (loadingRoles) {
-    return <Text>Loading Roles...</Text>; 
+    return <Text>Loading Roles...</Text>;
   }
 
   if (errorRoles) {
-    return <Text>Error loading roles: {errorRoles instanceof Error ? errorRoles.message : 'Unknown error'}</Text>; 
+    return <Text>Error loading roles: {errorRoles instanceof Error ? errorRoles.message : 'Unknown error'}</Text>;
   }
-
 
   return (
     <KeyboardAvoidingView

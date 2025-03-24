@@ -27,7 +27,7 @@ const roleApi: AxiosInstance = axios.create({
     }
   );
   
-  const getRole = async (): Promise<AxiosResponse<Role[]>> => {
+  const getRoles = async (): Promise<AxiosResponse<Role[]>> => {
     try {
       const response: AxiosResponse<Role[]> = await roleApi.get("/roles");
       return response;
@@ -37,4 +37,4 @@ const roleApi: AxiosInstance = axios.create({
     }
   };
 
-export {getRole};
+export {getRoles};
