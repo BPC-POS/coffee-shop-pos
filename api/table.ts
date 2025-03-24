@@ -1,10 +1,10 @@
 import axios, {AxiosResponse, AxiosInstance} from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Table, TableArea } from "@/types/Table";
-import { REACT_PUBLIC_API_AUTH_URL } from '@env';
+import Constants from 'expo-constants';
 
 const tableApi: AxiosInstance = axios.create({
-    baseURL: REACT_PUBLIC_API_AUTH_URL, 
+    baseURL: Constants.expoConfig?.extra?.apiUrl,
     headers: {
       'Content-Type': 'application/json',
     },

@@ -1,10 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { OrderAPI } from '@/types/Order';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { REACT_PUBLIC_API_AUTH_URL } from '@env';
+import Constants from 'expo-constants';
 
 const orderApi: AxiosInstance = axios.create({
-  baseURL: `${REACT_PUBLIC_API_AUTH_URL}`,
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
       'Content-Type': 'application/json',
     },
@@ -43,6 +43,8 @@ const createOrder = async (orderData: OrderAPI): Promise<AxiosResponse> => {
       ...orderData,
       order_date: orderData.order_date instanceof Date ? orderData.order_date.toISOString() : orderData.order_date
     };
+
+    console.log("Dữ liệu Order API Request:", formattedOrderData);
 
     const response: AxiosResponse = await orderApi.post("/orders", formattedOrderData);
     return response;

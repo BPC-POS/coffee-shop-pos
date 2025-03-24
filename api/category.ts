@@ -1,19 +1,24 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { Category } from '@/types/Product';
-import { REACT_PUBLIC_API_AUTH_URL } from '@env';
+import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const categoryApi: AxiosInstance = axios.create({
-  baseURL: process.env.REACTREACT_PUBLIC_API_AUTH_URL,
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 categoryApi.interceptors.request.use(
-  (config) => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken'); 
+      if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
     return config;
   },

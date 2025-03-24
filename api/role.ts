@@ -1,10 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { REACT_PUBLIC_API_AUTH_URL } from '@env';
+import Constants from 'expo-constants';
 import { Role } from '@/types/User';
 
 const roleApi: AxiosInstance = axios.create({
-    baseURL: `${REACT_PUBLIC_API_AUTH_URL}`,
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
     headers: {
       'Content-Type': 'application/json',
     },

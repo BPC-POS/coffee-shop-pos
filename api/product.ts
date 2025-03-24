@@ -1,16 +1,16 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { REACT_PUBLIC_API_AUTH_URL } from '@env';
+import Constants from 'expo-constants';
 
 const productApi: AxiosInstance = axios.create({
-  baseURL: `${REACT_PUBLIC_API_AUTH_URL}`,
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 const imageApi: AxiosInstance = axios.create({
-  baseURL: `${REACT_PUBLIC_API_AUTH_URL}`,
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },

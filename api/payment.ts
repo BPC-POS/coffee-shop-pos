@@ -1,23 +1,29 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 const paymentApi: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL, // Hoặc 'https://bpc-pos-admin-panel-api.nibies.space' nếu cần
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 paymentApi.interceptors.request.use(
-    (config) => {
-      const authToken = localStorage.getItem('authToken');
+  async (config) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken'); 
       if (authToken) {
         config.headers.Authorization = `Bearer ${authToken}`;
       }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
   );
 
 /**

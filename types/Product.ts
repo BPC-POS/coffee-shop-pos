@@ -49,14 +49,6 @@ export interface Topping {
     price: number;
 }
 
-export interface Variant {
-    sku: string;
-    price: number;
-    stock_quantity: number;
-    status: ProductStatus;
-    attributes: VariantAttribute[];
-}
-
 export interface ProductMeta {
     image_url?: string;
     image_id?: string;
@@ -169,3 +161,19 @@ export interface ProductFilter {
     page?: number;
     limit?: number;
 }
+
+export interface ProductAttribute {
+    id?: string | number;
+    attribute_id: string | number;
+    value: string;
+  }
+  export interface ProductVariant {
+    id: number; 
+    sku: string;
+    price: string;
+    stock_quantity: number; 
+    status: number; 
+    attributes: VariantAttribute[]; 
+}
+
+export interface Variant extends ProductVariant {}
