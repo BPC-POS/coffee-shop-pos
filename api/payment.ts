@@ -33,7 +33,7 @@ paymentApi.interceptors.request.use(
  * @returns {Promise<Blob>} - Promise resolve về Blob data của hình ảnh QR code.
  * @throws {Error} - Ném lỗi nếu có vấn đề trong quá trình gọi API.
  */
-const getPaymentQRCodeImage = async (id: number): Promise<Blob> => {
+const getPaymentInvoicePDF = async (id: number): Promise<Blob> => {
   try {
     const response: AxiosResponse = await paymentApi.get(`/orders/${id}/invoice`, {
       responseType: 'blob',
@@ -53,4 +53,4 @@ const getPaymentQRCodeImage = async (id: number): Promise<Blob> => {
   }
 };
 
-export { getPaymentQRCodeImage }; 
+export { getPaymentInvoicePDF }; 

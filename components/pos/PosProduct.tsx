@@ -85,12 +85,10 @@ const PosProduct: React.FC<Props> = ({ selectedTable, orderItems, onUpdateQuanti
             setRequireTableModalVisible(true);
             return;
         }
-        console.log("PosProduct - handleProductPress: productId =", productId);
         try {
             const response = await getProductById(productId);
             if (response.status >= 200 && response.status < 300) {
                 const productDetail = response.data;
-                console.log("PosProduct - handleProductPress: productDetail =", productDetail);
                 setSelectedProductForVariant(productDetail);
                 setIsVariantModalVisible(true);
             } else {
@@ -141,8 +139,6 @@ const PosProduct: React.FC<Props> = ({ selectedTable, orderItems, onUpdateQuanti
     );
 
     const handleAddToCartVariant = (variant: ProductVariant, product: Product) => {
-        console.log("PosProduct - handleAddToCartVariant: variant received from Modal =", variant); // Log variant nhận từ Modal
-        console.log("PosProduct - handleAddToCartVariant: product received from Modal =", product); // Log product nhận từ Modal
 
         const newOrderItem: OrderItemAPI = {
             id: Date.now(),
@@ -152,10 +148,8 @@ const PosProduct: React.FC<Props> = ({ selectedTable, orderItems, onUpdateQuanti
             quantity: 1,
             variant_id: variant.id,
         };
-        console.log("PosProduct - handleAddToCartVariant: newOrderItem created =", newOrderItem); // Log newOrderItem trước khi gọi onAddItem
 
         onAddItem(newOrderItem);
-        console.log("PosProduct - handleAddToCartVariant: onAddItem called with item =", newOrderItem); // Log sau khi gọi onAddItem
     };
 
 

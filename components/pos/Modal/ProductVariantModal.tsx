@@ -17,19 +17,14 @@ const ProductVariantModal: React.FC<ProductVariantModalProps> = ({ isVisible, pr
         if (!isVisible) {
             setSelectedVariant(null);
         }
-        console.log("ProductVariantModal - useEffect: product prop =", product);
     }, [isVisible, product]);
 
     const handleVariantSelect = (variant: ProductVariant) => {
         setSelectedVariant(variant);
-        console.log("ProductVariantModal - handleVariantSelect: selected variant =", variant);
     };
 
     const handleAddToCartPress = () => {
-        console.log("ProductVariantModal - handleAddToCartPress: selectedVariant =", selectedVariant);
-        console.log("ProductVariantModal - handleAddToCartPress: product =", product);
         if (selectedVariant && product) {
-            console.log("ProductVariantModal - handleAddToCartPress: selectedVariant.price =", selectedVariant.price); // LOG unit_price
             onAddToCart(selectedVariant, product);
             onClose();
         } else {

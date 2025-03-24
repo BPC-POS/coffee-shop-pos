@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react'; // Import useEffect
+import React, { useState, useMemo, useEffect } from 'react'; 
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Stack } from 'expo-router';
 import POSArea from '@/components/pos/PosArea';
@@ -6,7 +6,7 @@ import PosProduct from '@/components/pos/PosProduct';
 import PosOrderSummary from '@/components/pos/PosOrderSummary';
 import { OrderItemAPI, OrderAPI, OrderStatusAPI, PaymentMethod } from '@/types/Order';
 import { Table, TableStatus, TableArea } from "@/types/Table";
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import NotificationModal from '@/components/pos/Modal/NotificationModal';
 
 interface Props {
@@ -22,59 +22,48 @@ const PosScreen = () => {
     const [updatedTables, setUpdatedTables] = useState<Table[]>([]);
 
     useEffect(() => {
-        console.log("PosScreen - useEffect: orderItems state changed:", orderItems); // Log khi orderItems state thay đổi
     }, [orderItems]);
 
     const handleTableSelect = (table: Table | null) => {
         setSelectedTable(table);
         setShowPosArea(false);
-        console.log("PosScreen - handleTableSelect: selected table =", table);
     };
 
     const handleOpenRequireTableModal = () => {
         setRequireTableModalVisible(true);
         setShowPosArea(false);
-        console.log("PosScreen - handleOpenRequireTableModal: requireTableModalVisible =", requireTableModalVisible);
     };
 
     const handleUpdateQuantity = (productId: number, newQuantity: number) => {
-        console.log("PosScreen - handleUpdateQuantity: productId =", productId, "newQuantity =", newQuantity);
         setOrderItems(prevItems => {
             const updatedItems = prevItems.map(item =>
                 item.product_id === productId ? { ...item, quantity: newQuantity } : item
             );
-            console.log("PosScreen - handleUpdateQuantity: updated orderItems =", updatedItems);
             return updatedItems;
         });
     };
 
     const handleRemoveItem = (productId: number) => {
-        console.log("PosScreen - handleRemoveItem: productId =", productId);
         setOrderItems(prevItems => {
             const filteredItems = prevItems.filter(item => item.product_id !== productId);
-            console.log("PosScreen - handleRemoveItem: updated orderItems =", filteredItems);
             return filteredItems;
         });
     };
 
     const handleAddItem = (item: OrderItemAPI) => {
-        console.log("PosScreen - handleAddItem: item received from PosProduct =", item); // Log item nhận từ PosProduct
         setOrderItems(prevItems => {
             const existingItem = prevItems.find(exItem => exItem.product_id === item.product_id && exItem.variant_id === item.variant_id); // Check variant_id
             if (existingItem) {
                 const updatedItems = prevItems.map(exItem =>
                     exItem.product_id === item.product_id && exItem.variant_id === item.variant_id ? { ...exItem, quantity: exItem.quantity + 1 } : exItem // Check variant_id
                 );
-                console.log("PosScreen - handleAddItem: existing item, updated orderItems =", updatedItems);
                 return updatedItems;
             } else {
                 const newOrderItem: OrderItemAPI = {
-                    ...item, // Sử dụng trực tiếp item nhận được, giả định item đã có đầy đủ thông tin
-                    quantity: 1, // Set quantity = 1 khi thêm mới
+                    ...item, 
+                    quantity: 1, 
                 };
-                console.log("PosScreen - handleAddItem: new item, newOrderItem =", newOrderItem);
                 const updatedItems = [...prevItems, newOrderItem];
-                console.log("PosScreen - handleAddItem: new item, updated orderItems =", updatedItems);
                 return updatedItems;
             }
         });
@@ -105,7 +94,6 @@ const PosScreen = () => {
                 payment_method: undefined,
             }
         };
-        console.log("PosScreen - calculateOrder: calculated order =", order); // Log order tính toán
         return order
     }, [orderItems, selectedTable]);
 
@@ -117,27 +105,21 @@ const PosScreen = () => {
                 ...order,
                 payment_info: method === 'cash' ? PaymentMethod.CASH : PaymentMethod.TRANSFER,
             };
-            console.log("PosScreen - handlePaymentComplete: updated order for payment =", updatedOrder);
-            console.log("PosScreen - handlePaymentComplete: payment method =", method);
         }
         setOrderItems([]);
-        console.log("PosScreen - handlePaymentComplete: orderItems reset to empty array");
         if (method === 'cash') {
             setSelectedTable(null);
             setShowPosArea(true);
-            console.log("PosScreen - handlePaymentComplete: table deselected, showPosArea set to true");
         }
     }
 
     const handleCheckout = () => {
-        console.log("PosScreen - handleCheckout: current orderItems =", orderItems);
     }
 
     const handleCancelOrder = () => {
         setOrderItems([]);
         setSelectedTable(null);
         setShowPosArea(true);
-        console.log("PosScreen - handleCancelOrder: orderItems reset, table deselected, showPosArea set to true");
     }
 
     const handleOpenNotificationModal = () => {
@@ -148,13 +130,11 @@ const PosScreen = () => {
         ];
         setUpdatedTables(fakeUpdatedTables);
         setIsNotificationModalVisible(true);
-        console.log("PosScreen - handleOpenNotificationModal: notification modal opened");
     };
 
     const handleCloseNotificationModal = () => {
         setIsNotificationModalVisible(false);
         setUpdatedTables([]);
-        console.log("PosScreen - handleCloseNotificationModal: notification modal closed");
     };
 
 
