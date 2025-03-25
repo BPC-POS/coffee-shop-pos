@@ -4698,6 +4698,11 @@ expo-modules-core@2.2.1:
   dependencies:
     invariant "^2.2.4"
 
+expo-print@^14.0.3:
+  version "14.0.3"
+  resolved "https://registry.npmjs.org/expo-print/-/expo-print-14.0.3.tgz"
+  integrity sha512-VEGl7SX3q2Z3ZKwvxtOBAlXm9yDX8Jodewr+kouQcg2EaV0ciAH9rqLwRWZhAtEETpVdEG53ow7IAmwJU7jInA==
+
 expo-router@~4.0.17:
   version "4.0.17"
   resolved "https://registry.npmjs.org/expo-router/-/expo-router-4.0.17.tgz"

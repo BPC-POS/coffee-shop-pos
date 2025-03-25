@@ -1,59 +1,23 @@
 import React from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { formatCurrency } from '@/utils/format';
-import {getPaymentQRCodeImage} from '@/api/payment'; // Import getPaymentQRCodeImage
 
 export interface Props {
     isVisible: boolean;
     totalAmount: number;
-    onPaymentMethodSelect: (method: 'cash' | 'transfer') => Promise<void>; // Giữ nguyên kiểu Promise<void>
-    qrCodeImageBlob: Blob | null; // Có thể không cần prop này nữa, hoặc dùng để hiển thị QR đã fetch sẵn (tùy logic)
+    onPaymentMethodSelect: (method: 'cash' | 'transfer') => Promise<void>;
     onClose: () => void;
-    paymentError: string | null;
-    orderId: number | null; // Nhận orderId từ PosOrderSummary
+    paymentError: string | null; // Có thể không cần prop này ở PaymentMethodModal
 }
 
-const PaymentModal: React.FC<Props> = ({ isVisible, totalAmount, onPaymentMethodSelect, onClose, qrCodeImageBlob, paymentError, orderId }) => {
+const PaymentModal: React.FC<Props> = ({ isVisible, totalAmount, onPaymentMethodSelect, onClose, paymentError }) => {
     const [paymentLoading, setPaymentLoading] = React.useState(false);
-    const [localQrCodeImageBlob, setLocalQrCodeImageBlob] = React.useState<Blob | null>(null); // State nội bộ cho QR code
-    const [localPaymentError, setLocalPaymentError] = React.useState<string | null>(null); // State nội bộ cho lỗi thanh toán
-
-    React.useEffect(() => {
-        if (isVisible && orderId && !localQrCodeImageBlob && !localPaymentError) {
-            // Fetch QR code khi modal mở và có orderId và chưa fetch QR thành công
-            const fetchQrCode = async () => {
-                setPaymentLoading(true);
-                setLocalPaymentError(null); // Reset lỗi trước khi fetch mới
-                try {
-                    const qrCodeData = await getPaymentQRCodeImage(orderId);
-                    if (qrCodeData) {
-                        setLocalQrCodeImageBlob(qrCodeData);
-                    } else {
-                        setLocalPaymentError("Không thể tải mã QR. Dữ liệu QR không hợp lệ.");
-                    }
-                } catch (error: any) {
-                    setLocalPaymentError("Lỗi khi lấy mã QR thanh toán. Vui lòng thử lại.");
-                    console.error("Lỗi fetch QR code trong PaymentModal:", error);
-                } finally {
-                    setPaymentLoading(false);
-                }
-            };
-            fetchQrCode();
-        }
-    }, [isVisible, orderId, localQrCodeImageBlob, localPaymentError]);
 
     const handleMethodSelect = async (method: 'cash' | 'transfer') => {
         setPaymentLoading(true);
-        setLocalPaymentError(null); // Reset lỗi khi chọn phương thức thanh toán mới
-        if (method === 'transfer' && !orderId) {
-            setLocalPaymentError("Lỗi: Không có Order ID để tạo mã QR.");
-            setPaymentLoading(false);
-            return;
-        }
-        await onPaymentMethodSelect(method); // Gọi callback từ component cha để xử lý thanh toán cuối cùng
-        setPaymentLoading(false); // Loading button sẽ dừng khi callback cha xử lý xong (hoặc modal đóng)
+        await onPaymentMethodSelect(method); // Gọi callback để xử lý thanh toán ở component cha
+        setPaymentLoading(false);
     };
-
 
     return (
         <Modal
@@ -67,25 +31,8 @@ const PaymentModal: React.FC<Props> = ({ isVisible, totalAmount, onPaymentMethod
                     <Text style={styles.modalTitle}>Chọn phương thức thanh toán</Text>
                     <Text style={styles.modalText}>Tổng tiền: {formatCurrency(totalAmount)}</Text>
 
-                    {localPaymentError && ( // Hiển thị lỗi nội bộ của Modal
-                        <Text style={styles.errorText}>{localPaymentError}</Text>
-                    )}
-                    {paymentError && !localPaymentError && ( // Hiển thị lỗi từ prop, ưu tiên lỗi nội bộ nếu có
+                    {paymentError && ( // Chỉ hiển thị paymentError nếu có (từ prop)
                         <Text style={styles.errorText}>{paymentError}</Text>
-                    )}
-
-                    {localQrCodeImageBlob && ( // Sử dụng localQrCodeImageBlob để hiển thị QR
-                        <View style={styles.qrCodeContainer}>
-                             <Text style={styles.qrCodeDescription}>Quét mã QR để thanh toán</Text>
-                            <>
-                                {paymentLoading && <ActivityIndicator />}
-                                <Image
-                                    source={{ uri: `data:image/png;base64,${localQrCodeImageBlob}` }}
-                                    style={styles.qrCodeImage}
-                                    resizeMode="contain"
-                                />
-                            </>
-                        </View>
                     )}
 
                     <View style={styles.buttonContainer}>
@@ -183,20 +130,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: 'bold',
         fontSize: 16,
-    },
-    qrCodeContainer: {
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    qrCodeDescription: {
-        fontSize: 16,
-        marginBottom: 10,
-        textAlign: 'center',
-        color: '#333',
-    },
-    qrCodeImage: {
-        width: 200,
-        height: 200,
     },
     errorText: {
         color: '#dc3545',

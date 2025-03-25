@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { PaymentMethod, Order as OrderType, OrderAPI, OrderItemAPI, OrderStatusAPI } from '@/types/Order';
-import { TableStatus, tableStatusToNumericStatus } from '@/types/Table';
+import { TableStatus } from '@/types/Table';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import PaymentModal from './Modal/PaymentModal'; 
+import PaymentMethodModal from './Modal/PaymentModal';
+import InvoicePDFModal from './Modal/InvoicePDFModal';
 import { createOrder } from '@/api/order';
-import {getPaymentInvoicePDF} from '@/api/payment';
+import { getPaymentInvoicePDF } from '@/api/payment';
 
 interface Props {
     selectedTable: string | null;
@@ -37,7 +38,8 @@ const PosOrderSummary: React.FC<Props> = ({
     const [totalAmount, setTotalAmount] = useState<number>(0);
     const [displayTotalAmount, setDisplayTotalAmount] = useState<number>(0);
     const [tableNumber, setTableNumber] = useState<string | null>(null);
-    const [paymentModalVisible, setPaymentModalVisible] = useState(false); // State MODAL PAYMENT METHOD
+    const [paymentMethodModalVisible, setPaymentMethodModalVisible] = useState(false);
+    const [pdfModalVisible, setPdfModalVisible] = useState(false);
     const [creatingOrder, setCreatingOrder] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [qrCodeImage, setQrCodeImage] = useState<Blob | null>(null);
@@ -60,7 +62,7 @@ const PosOrderSummary: React.FC<Props> = ({
     }, [orderItems, selectedTable, taxAmount, discountAmount]);
 
 
-   const handleQuantityChange = (productId: number, newQuantity: number) => {
+    const handleQuantityChange = (productId: number, newQuantity: number) => {
         if (newQuantity <= 0) {
             onRemoveItem(productId);
         } else {
@@ -69,112 +71,104 @@ const PosOrderSummary: React.FC<Props> = ({
     };
 
     const handlePaymentMethodSelectInModal = async (method: 'cash' | 'transfer') => {
-        setPaymentModalVisible(false); // Đóng modal chọn PHƯƠNG THỨC thanh toán (modal này chỉ để chọn phương thức thôi)
+        setPaymentMethodModalVisible(false);
 
-        const orderCreated = await handleCheckoutPress(method as PaymentMethod); // Gọi handleCheckoutPress và truyền phương thức thanh toán đã chọn
+        const { orderCreated, orderId } = await handleCheckoutPress(method as PaymentMethod);
 
-        if (orderCreated) { // CHỈ XỬ LÝ TIẾP NẾU TẠO ORDER THÀNH CÔNG
+        if (orderCreated) {
             if (method === 'transfer') {
-                if (createdOrderId) {
+                if (orderId) {
+                    setCreatedOrderId(orderId);
                     setPaymentError(null);
-                    try {
-                        const qrCodeBlob = await getPaymentInvoicePDF(createdOrderId);
-                        setQrCodeImage(qrCodeBlob);
-                        setPaymentModalVisible(true); // Mở LẠI PaymentModal để hiển thị QR code (modal QR CODE)
-                    } catch (error: any) {
-                        setPaymentError("Lỗi khi lấy mã QR thanh toán. Vui lòng thử lại.");
-                        console.error("Error fetching QR code:", error);
-                        Alert.alert("Lỗi thanh toán", "Không thể lấy mã QR thanh toán. Vui lòng thử lại sau.");
-                        setPaymentModalVisible(true); // Mở LẠI PaymentModal để hiển thị lỗi (modal QR CODE)
-                    }
+                    setPdfModalVisible(true);
                 } else {
-                    setPaymentError("Lỗi: Không có Order ID để tạo mã QR.");
+                    setPaymentError("Lỗi: Không có Order ID sau khi tạo order.");
                     Alert.alert("Lỗi thanh toán", "Không thể tạo mã QR vì Order ID không hợp lệ.");
-                    setPaymentModalVisible(true); // Mở LẠI PaymentModal để hiển thị lỗi (modal QR CODE)
+                    setPaymentMethodModalVisible(true);
                 }
             } else if (method === 'cash') {
-                onPaymentComplete(method); // Hoàn tất đơn hàng TIỀN MẶT ngay
+                onPaymentComplete(method);
             }
         } else {
-            // Xử lý trường hợp tạo order THẤT BẠI (ví dụ, hiển thị thông báo lỗi)
             Alert.alert("Lỗi", "Không thể tạo đơn hàng. Vui lòng thử lại.");
-            setPaymentModalVisible(true); // Có thể mở lại modal chọn phương thức thanh toán để thử lại, hoặc đóng modal tùy logic
+            setPaymentMethodModalVisible(true);
         }
-   }
-
-   const handleClosePaymentModal = () => {
-       setPaymentModalVisible(false); // Đóng PaymentModal (cả modal chọn phương thức và modal QR code)
-       setPaymentError(null);
-       setQrCodeImage(null);
-   }
-
-   const handleCheckoutPress = async (paymentMethod: PaymentMethod) => { // **NHẬN paymentMethod LÀM THAM SỐ**
-    if (orderItems.length === 0) {
-        Alert.alert("Giỏ hàng trống", "Vui lòng thêm sản phẩm vào đơn hàng trước khi thanh toán.");
-        return false; // Indicate order creation failure
     }
 
-    setCreatingOrder(true);
-    setPaymentError(null);
-    try {
-        const orderItemsAPI: OrderItemAPI[] = orderItems.map(item => ({
-            product_id: item.product_id,
-            quantity: item.quantity,
-            unit_price: item.unit_price,
-            variant_id: item.variant_id,
-        }));
-
-        const orderData: OrderAPI = {
-            user_id: userId,
-            order_date: new Date(),
-            total_amount: calculatePriceWithTax(totalAmount),
-            discount: discountAmount,
-            tax: taxAmount,
-            status: OrderStatusAPI.CONFIRMED,
-            payment_info: paymentMethod, // **SỬ DỤNG paymentMethod TRUYỀN VÀO**
-            shipping_address: shippingAddress,
-            items: orderItemsAPI,
-            meta: {
-                table_id: selectedTableId || 0,
-                payment_method: paymentMethod === PaymentMethod.CASH ? 1 : 2
-            },
-        };
-
-        const response = await createOrder(orderData);
-        if (response.status >= 200 && response.status < 300) {
-            const orderResponseData = response.data;
-            setCreatedOrderId(orderResponseData.id);
-            onUpdateTableStatus(selectedTableId as number, TableStatus.OCCUPIED);
-            return true; // Indicate order creation success (TẠO ORDER THÀNH CÔNG)
-        } else {
-            setPaymentError(`Lỗi khi tạo đơn hàng. Mã lỗi: ${response.status}`);
-            Alert.alert("Lỗi tạo đơn hàng", `Không thể tạo đơn hàng. Mã lỗi: ${response.status}`);
-            return false; // Indicate order creation failure (TẠO ORDER THẤT BẠI)
-        }
-    } catch (error: any) {
-        setPaymentError("Lỗi kết nối hoặc lỗi không xác định khi tạo đơn hàng.");
-        console.error("Error creating order:", error);
-        Alert.alert("Lỗi tạo đơn hàng", "Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.");
-        return false; // Indicate order creation failure (TẠO ORDER THẤT BẠI)
-    } finally {
-        setCreatingOrder(false);
+    const handleClosePaymentModal = () => {
+        setPaymentMethodModalVisible(false);
+        setPdfModalVisible(false);
+        setPaymentError(null);
+        setQrCodeImage(null);
     }
-};
 
-    const handleShowPaymentOptions = () => { // Hiển thị Modal chọn phương thức thanh toán
-        setPaymentModalVisible(true); // Mở modal chọn phương thức thanh toán
+    const handleCheckoutPress = async (paymentMethod: PaymentMethod) => {
+        if (orderItems.length === 0) {
+            Alert.alert("Giỏ hàng trống", "Vui lòng thêm sản phẩm vào đơn hàng trước khi thanh toán.");
+            return { orderCreated: false, orderId: null };
+        }
+
+        setCreatingOrder(true);
+        setPaymentError(null);
+        try {
+            const orderItemsAPI: OrderItemAPI[] = orderItems.map(item => ({
+                product_id: item.product_id,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                variant_id: item.variant_id,
+            }));
+
+            const orderData: OrderAPI = {
+                user_id: userId,
+                order_date: new Date(),
+                total_amount: calculatePriceWithTax(totalAmount),
+                discount: discountAmount,
+                tax: taxAmount,
+                status: OrderStatusAPI.CONFIRMED,
+                payment_info: paymentMethod,
+                shipping_address: shippingAddress,
+                items: orderItemsAPI,
+                meta: {
+                    table_id: selectedTableId || 0,
+                    payment_method: paymentMethod === PaymentMethod.CASH ? 1 : 2
+                },
+            };
+
+            const response = await createOrder(orderData);
+            if (response.status >= 200 && response.status < 300) {
+                const orderResponseData = response.data;
+                const orderId = orderResponseData.id;
+                setCreatedOrderId(orderId);
+                onUpdateTableStatus(selectedTableId as number, TableStatus.OCCUPIED);
+                return { orderCreated: true, orderId };
+            } else {
+                setPaymentError(`Lỗi khi tạo đơn hàng. Mã lỗi: ${response.status}`);
+                Alert.alert("Lỗi tạo đơn hàng", `Không thể tạo đơn hàng. Mã lỗi: ${response.status}`);
+                return { orderCreated: false, orderId: null };
+            }
+        } catch (error: any) {
+            setPaymentError("Lỗi kết nối hoặc lỗi không xác định khi tạo đơn hàng.");
+            console.error("Error creating order:", error);
+            Alert.alert("Lỗi tạo đơn hàng", "Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.");
+            return { orderCreated: false, orderId: null };
+        } finally {
+            setCreatingOrder(false);
+        }
     };
 
+    const handleShowPaymentOptions = () => {
+        setPaymentMethodModalVisible(true);
+    };
 
     const QuantityControl = ({ productId, quantity }: { productId: number, quantity: number }) => {
         return (
             <View style={styles.quantityContainer}>
                 <TouchableOpacity style={styles.quantityButton} onPress={() => handleQuantityChange(productId, quantity - 1)}>
-                      <Ionicons name="remove-circle-outline" size={24} color="#333" />
+                    <Ionicons name="remove-circle-outline" size={24} color="#333" />
                 </TouchableOpacity>
                 <Text style={styles.quantityText}>{quantity}</Text>
-                <TouchableOpacity style={styles.quantityButton}  onPress={() => handleQuantityChange(productId, quantity + 1)}>
-                     <Ionicons name="add-circle-outline" size={24} color="#333" />
+                <TouchableOpacity style={styles.quantityButton} onPress={() => handleQuantityChange(productId, quantity + 1)}>
+                    <Ionicons name="add-circle-outline" size={24} color="#333" />
                 </TouchableOpacity>
             </View>
         );
@@ -241,7 +235,7 @@ const PosOrderSummary: React.FC<Props> = ({
                         value={voucherCode}
                         onChangeText={setVoucherCode}
                     />
-                     <TextInput
+                    <TextInput
                         style={styles.input}
                         placeholder="Giá trị giảm (VNĐ)"
                         keyboardType="number-pad"
@@ -283,7 +277,7 @@ const PosOrderSummary: React.FC<Props> = ({
                 <View style={styles.buttonContainer}>
                     <TouchableOpacity
                         style={styles.paymentButton}
-                        onPress={handleShowPaymentOptions} // Mở modal chọn phương thức thanh toán
+                        onPress={handleShowPaymentOptions}
                         disabled={creatingOrder}
                     >
                         {creatingOrder ? (
@@ -296,29 +290,23 @@ const PosOrderSummary: React.FC<Props> = ({
                         <Text style={styles.cancelButtonText}>Hủy đơn</Text>
                     </TouchableOpacity>
                 </View>
-             </ScrollView>
-             {paymentMenuVisible && (
-                <View style={styles.paymentMenu} >
-                    <TouchableOpacity style={styles.paymentMenuItem} onPress={() => handlePaymentMethodSelectInModal('cash')}>
-                        <Text style={styles.paymentMenuItemText}>Tiền mặt</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.paymentMenuItem} onPress={() => handlePaymentMethodSelectInModal('transfer')}>
-                        <Text style={styles.paymentMenuItemText}>Chuyển khoản</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
+            </ScrollView>
 
+            <PaymentMethodModal
+                isVisible={paymentMethodModalVisible}
+                totalAmount={calculatePriceWithTax(totalAmount)}
+                onPaymentMethodSelect={handlePaymentMethodSelectInModal}
+                onClose={handleClosePaymentModal}
+                paymentError={paymentError}
+            />
 
-                <PaymentModal // Tái sử dụng PaymentModal
-                    isVisible={paymentModalVisible} // Sử dụng paymentMethodModalVisible để điều khiển modal
-                    totalAmount={calculatePriceWithTax(totalAmount)}
-                    onPaymentMethodSelect={handlePaymentMethodSelectInModal} // Giữ nguyên onPaymentMethodSelect
-                     onClose={handleClosePaymentModal} // Giữ nguyên onClose
-                     qrCodeImageBlob={qrCodeImage} // Giữ nguyên qrCodeImageBlob
-                     paymentError={paymentError} // Giữ nguyên paymentError
-                     orderId={createdOrderId} // Giữ nguyên orderId
-                     isPaymentMethodSelection={true} // Thêm prop để PaymentModal biết là modal chọn phương thức thanh toán
-                />
+            <InvoicePDFModal
+                isVisible={pdfModalVisible}
+                orderId={createdOrderId}
+                onClose={handleClosePaymentModal}
+                paymentError={paymentError}
+                totalAmount={calculatePriceWithTax(totalAmount)}
+            />
         </View>
     );
 };
@@ -413,7 +401,7 @@ const styles = StyleSheet.create({
         color: '#3498db',
         fontWeight: 'bold',
     },
-     discountedPriceValue: {
+    discountedPriceValue: {
         fontSize: 18,
         color: '#27ae60',
         fontWeight: 'bold',
@@ -461,30 +449,9 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     quantityText: {
-      fontSize: 18,
-      marginHorizontal: 10,
-      color: '#333'
-    },
-    paymentMenu: {
-        // position: 'absolute', // Removed absolute positioning
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-        width: 180,
-        marginTop: 10, // Added margin to separate from button
-        alignSelf: 'flex-end', // Align to the right side
-    },
-    paymentMenuItem: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-    },
-    paymentMenuItemText: {
-        fontSize: 16,
-        color: '#333',
+        fontSize: 18,
+        marginHorizontal: 10,
+        color: '#333'
     },
 });
 
