@@ -4,6 +4,17 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Order, OrderStatus, PaymentStatus } from '@/types/Order';
 import { formatCurrency } from '@/utils/format';
 
+// Helper function to format currency in a more compact way
+const formatCompactCurrency = (amount: number) => {
+  if (amount >= 1000000) {
+    return formatCurrency(Math.round(amount / 1000000 * 10) / 10) + 'M';
+  } else if (amount >= 1000) {
+    return formatCurrency(Math.round(amount / 1000 * 10) / 10) + 'K';
+  } else {
+    return formatCurrency(amount);
+  }
+};
+
 interface OrderStatsProps {
   orders: Order[];
 }
@@ -77,11 +88,24 @@ const OrderStats: React.FC<OrderStatsProps> = ({ orders }) => {
         {statCards.map((stat, index) => (
           <View key={index} style={styles.gridItem}>
             <View style={styles.card}>
-              <View style={[styles.cardHeader, { backgroundColor: stat.color.replace('bg-', '') }]}>
+              <View style={[
+                styles.cardHeader, 
+                { backgroundColor: stat.color.replace('bg-', '') }
+              ]}>
                 <View style={styles.iconContainer}>
                    <Icon name={stat.icon} size={32} color={stat.iconColor.replace('text-','')} />
                 </View>
-                <Text style={styles.cardValue}>{stat.value}</Text>
+                <Text 
+                  style={[
+                    styles.cardValue, 
+                    { color: stat.iconColor.replace('text-','') },
+                    stat.title === 'Doanh thu' && styles.revenueValue
+                  ]} 
+                  numberOfLines={1} 
+                  ellipsizeMode="tail"
+                >
+                  {stat.value}
+                </Text>
               </View>
               <Text style={styles.cardTitle}>{stat.title}</Text>
             </View>
@@ -105,11 +129,12 @@ const styles = StyleSheet.create({
   gridItem: {
     width: '48%',
     marginBottom: 16,
+    height: 170,
   },
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -119,38 +144,53 @@ const styles = StyleSheet.create({
     shadowRadius: 2.62,
     elevation: 4,
     transform: [{ translateY: 0 }],
-
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
   },
   cardHeader: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    padding: 16,
+    justifyContent: 'center',
+    padding: 12,
+    paddingHorizontal: 8,
     marginBottom: 8,
-    borderRadius: 12
+    borderRadius: 12,
+    flex: 1,
   },
-    iconContainer: {
-      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        padding: 8,
-        borderRadius: 8,
-          shadowColor: '#000',
-          shadowOffset: {
-              width: 0,
-              height: 1,
-          },
-          shadowOpacity: 0.18,
-          shadowRadius: 1.00,
-          elevation: 1,
+  iconContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 8,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
     },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.00,
+    elevation: 1,
+    marginBottom: 8,
+  },
   cardValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
-     fontFamily: 'Poppins-SemiBold',
-    marginLeft: 16,
+    fontFamily: 'Poppins-SemiBold',
+    textAlign: 'center',
+    paddingHorizontal: 4,
+    flexShrink: 1,
   },
   cardTitle: {
     fontSize: 14,
     color: 'gray',
-     fontFamily: 'Poppins-Medium',
+    fontFamily: 'Poppins-Medium',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  revenueValue: {
+    fontSize: 14,
+    paddingHorizontal: 2,
+    marginTop: 4,
   },
 });
 

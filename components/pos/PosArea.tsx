@@ -6,9 +6,10 @@ import { getTableAreas, getTables, updateTable as updateTableAPI } from '@/api/t
 
 interface Props {
     onTableSelect: (table: Table | null) => void;
+    tables?: Table[];
 }
 
-const POSArea: React.FC<Props> = ({ onTableSelect }) => {
+const POSArea: React.FC<Props> = ({ onTableSelect, tables = [] }) => {
     const [selectedArea, setSelectedArea] = useState<string>('1');
     const [selectedTable, setSelectedTable] = useState<Table | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
@@ -26,8 +27,13 @@ const POSArea: React.FC<Props> = ({ onTableSelect }) => {
 
     useEffect(() => {
         fetchAreas();
-        fetchTablesData();
-    }, []);
+        if (tables.length === 0) {
+            fetchTablesData();
+        } else {
+            setTablesFromApi(tables);
+            setLoadingTables(false);
+        }
+    }, [tables]);
 
     const fetchAreas = async () => {
         setLoadingAreas(true);
@@ -107,17 +113,34 @@ const POSArea: React.FC<Props> = ({ onTableSelect }) => {
         setUpdatingTableStatus(tableId);
         try {
             const numericNewStatus = tableStatusToNumericStatus[newStatus];
-            const updateData: UpdateTableDTO = {
+            
+            // Tìm thông tin đầy đủ của bàn hiện tại
+            const currentTable = tablesFromApi.find(t => t.id === tableId);
+            if (!currentTable) {
+                throw new Error("Không tìm thấy thông tin bàn");
+            }
+            
+            // Chuẩn bị dữ liệu đầy đủ để cập nhật
+            const updateData = {
                 id: tableId,
-                status: newStatus,
+                name: currentTable.name,
+                capacity: currentTable.capacity,
+                notes: currentTable.note || "",
+                status: numericNewStatus,
+                areaId: currentTable.areaId
             };
-            await updateTableAPI(updateData as any);
+            
+            // Gọi API cập nhật bàn
+            await updateTableAPI(updateData);
 
+            // Cập nhật state local
             setTablesFromApi(prevTables =>
                 prevTables.map(table =>
                     table.id === tableId ? { ...table, status: numericNewStatus } : table
                 )
             );
+            
+            Alert.alert("Thành công", `Đã cập nhật trạng thái bàn ${currentTable.name}`);
         } catch (error) {
             console.error("Error updating table status:", error);
             Alert.alert("Lỗi", "Không thể cập nhật trạng thái bàn.");

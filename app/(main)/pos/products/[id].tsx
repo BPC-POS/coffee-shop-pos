@@ -1,6 +1,7 @@
 import { View, Text, Image, ScrollView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { mockProducts } from '@/mock/mockProducts';
+import { Size } from '@/types/Product';
 
 const ProductDetail = () => {
   const { id } = useLocalSearchParams();
@@ -23,7 +24,7 @@ const ProductDetail = () => {
       {/* Hiển thị size */}
       <View className="mt-4">
         <Text className="text-lg font-semibold">Chọn Size:</Text>
-        {product.size.map((s) => (
+        {product.size.map((s: Size) => (
           <Text key={s.name} className="text-gray-700">
             {s.name} - {s.price.toLocaleString()}đ {s.isDefault && "(Mặc định)"}
           </Text>

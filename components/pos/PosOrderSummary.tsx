@@ -137,8 +137,8 @@ const PosOrderSummary: React.FC<Props> = ({
             const response = await createOrder(orderData);
             if (response.status >= 200 && response.status < 300) {
                 const orderResponseData = response.data;
-                const orderId = orderResponseData.id;
-                setCreatedOrderId(orderId);
+                const orderId = orderResponseData?.id;
+                setCreatedOrderId(orderId || null);
                 onUpdateTableStatus(selectedTableId as number, TableStatus.OCCUPIED);
                 return { orderCreated: true, orderId };
             } else {

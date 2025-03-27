@@ -11,10 +11,10 @@ interface Props {
 }
 
 const areas: TableArea[] = [
-  { id: '1', name: 'Tất cả', isActive: true },
-  { id: '2', name: 'Trong nhà', isActive: true },
-  { id: '3', name: 'Tầng 1', isActive: true },
-  { id: '4', name: 'Sân vườn', isActive: true },
+  { id: '1', name: 'Tất cả', code: 'indoor', isActive: true },
+  { id: '2', name: 'Trong nhà', code: 'indoor', isActive: true },
+  { id: '3', name: 'Tầng 1', code: 'indoor', isActive: true },
+  { id: '4', name: 'Sân vườn', code: 'outdoor', isActive: true },
 ];
 
 const AreaTableScreen = () => {
@@ -28,7 +28,10 @@ const AreaTableScreen = () => {
   // Lọc danh sách bàn theo khu vực
   const filteredTables = selectedArea === '1'
     ? tables
-    : tables.filter(table => table.area === selectedArea);
+    : tables.filter(table => {
+        const area = areas.find(a => a.id === selectedArea);
+        return area ? table.area.code === area.code : false;
+      });
 
   // Xử lý khi bấm vào bàn
   const handleTablePress = (table: Table) => {
@@ -145,7 +148,7 @@ const AreaTableScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Chọn trạng thái bàn</Text>
-            {Object.values(TableStatus).map((status) => (
+            {(Object.values(TableStatus) as TableStatus[]).map((status) => (
               <TouchableOpacity
                 key={status}
                 style={styles.statusButton}
