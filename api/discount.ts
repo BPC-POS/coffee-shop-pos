@@ -1,8 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { Discount } from '../types/discount';
+import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const discountApi: AxiosInstance = axios.create({
-  baseURL: 'https://bpc-pos-app-api.nibies.space',
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
     'Content-Type': 'application/json',
     'accept': '*/*'
@@ -10,10 +12,14 @@ const discountApi: AxiosInstance = axios.create({
 });
 
 discountApi.interceptors.request.use(
-  (config) => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken');
+      if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
     return config;
   },

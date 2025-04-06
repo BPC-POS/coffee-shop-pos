@@ -38,6 +38,7 @@
     "expo-splash-screen": "~0.29.21",
     "expo-status-bar": "~2.0.1",
     "expo-web-browser": "~14.0.2",
+    "firebase": "^11.5.0",
     "jest-expo": "~52.0.3",
     "legacy": "^0.0.3",
     "nativewind": "^4.1.23",

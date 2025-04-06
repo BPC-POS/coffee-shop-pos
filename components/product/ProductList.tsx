@@ -49,7 +49,7 @@ const ProductList: React.FC<ProductListProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<string | number>('all');
   const [page, setPage] = useState(1);
 
 
@@ -58,7 +58,7 @@ const ProductList: React.FC<ProductListProps> = ({
       .filter(product => {
         const matchesCategory = currentCategory === 'all' || product.category === currentCategory;
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+        const matchesStatus = statusFilter === 'all' || Number(product.status) === Number(statusFilter);
         return matchesCategory && matchesSearch && matchesStatus;
       })
       .sort((a, b) => {

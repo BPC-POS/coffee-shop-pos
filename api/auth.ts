@@ -15,6 +15,7 @@ const signIn = async (email: string, password: string): Promise<AxiosResponse> =
       email: email,
       password: password,
     };
+    
     const response: AxiosResponse = await authApi.post('/v1/auth/sign-in', requestBody);
 
     if (response.status >= 200 && response.status < 300) {

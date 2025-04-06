@@ -107,7 +107,24 @@ const LoginForm: React.FC = () => {
       }
     } catch (loginError: any) {
       console.error("Login error:", loginError);
-      Alert.alert("Login Error", "Could not connect to server. Please check your internet connection and try again.");
+      
+      // Provide more specific error messages
+      if (loginError.message && loginError.message.includes('Network Error')) {
+        Alert.alert(
+          "Connection Error", 
+          "Unable to connect to the server. Please check your internet connection and try again.",
+          [{ text: "OK" }]
+        );
+      } else if (loginError.response) {
+        // The server responded with a status code outside the 2xx range
+        if (loginError.response.status === 401) {
+          Alert.alert("Login Failed", "Invalid email or password. Please try again.");
+        } else {
+          Alert.alert("Login Error", `Server error (${loginError.response.status}). Please try again later.`);
+        }
+      } else {
+        Alert.alert("Login Error", "Could not connect to server. Please check your internet connection and try again.");
+      }
     }
   };
 

@@ -1,18 +1,24 @@
 import axios, { AxiosResponse, AxiosInstance } from 'axios';
 import { Staff } from '@/types/Staff';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 const employeeApi: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL,
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 employeeApi.interceptors.request.use(
-  (config) => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken');
+      if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
     return config;
   },

@@ -1,9 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { OrderAPI } from '../types/Order';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 const orderApi: AxiosInstance = axios.create({
-  baseURL: 'https://bpc-pos-app-api.nibies.space',
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
     'Content-Type': 'application/json',
     'accept': '*/*'
