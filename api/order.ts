@@ -45,7 +45,6 @@ const createOrder = async (orderData: Omit<OrderAPI, 'id' | 'createdAt' | 'updat
       order_date: orderData.order_date instanceof Date ? orderData.order_date.toISOString() : orderData.order_date
     };
 
-    console.log("Order API Request Data:", formattedOrderData);
     const response = await orderApi.post<OrderAPI>('/orders', formattedOrderData);
     return response;
   } catch (error) {

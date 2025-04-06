@@ -5,6 +5,7 @@ import { TableStatus } from '@/types/Table';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import PaymentMethodModal from './Modal/PaymentModal';
 import InvoicePDFModal from './Modal/InvoicePDFModal';
+import QRCodeModal from './Modal/QRCodeModal';
 import { createOrder } from '@/api/order';
 import { getPaymentInvoicePDF } from '@/api/payment';
 
@@ -40,6 +41,7 @@ const PosOrderSummary: React.FC<Props> = ({
     const [tableNumber, setTableNumber] = useState<string | null>(null);
     const [paymentMethodModalVisible, setPaymentMethodModalVisible] = useState(false);
     const [pdfModalVisible, setPdfModalVisible] = useState(false);
+    const [qrCodeModalVisible, setQrCodeModalVisible] = useState(false);
     const [creatingOrder, setCreatingOrder] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
     const [qrCodeImage, setQrCodeImage] = useState<Blob | null>(null);
@@ -83,7 +85,7 @@ const PosOrderSummary: React.FC<Props> = ({
                     setPdfModalVisible(true);
                 } else {
                     setPaymentError("Lỗi: Không có Order ID sau khi tạo order.");
-                    Alert.alert("Lỗi thanh toán", "Không thể tạo mã QR vì Order ID không hợp lệ.");
+                    Alert.alert("Lỗi thanh toán", "Không thể tạo hóa đơn vì Order ID không hợp lệ.");
                     setPaymentMethodModalVisible(true);
                 }
             } else if (method === 'cash') {
@@ -98,6 +100,7 @@ const PosOrderSummary: React.FC<Props> = ({
     const handleClosePaymentModal = () => {
         setPaymentMethodModalVisible(false);
         setPdfModalVisible(false);
+        setQrCodeModalVisible(false);
         setPaymentError(null);
         setQrCodeImage(null);
     }
@@ -302,6 +305,14 @@ const PosOrderSummary: React.FC<Props> = ({
 
             <InvoicePDFModal
                 isVisible={pdfModalVisible}
+                orderId={createdOrderId}
+                onClose={handleClosePaymentModal}
+                paymentError={paymentError}
+                totalAmount={calculatePriceWithTax(totalAmount)}
+            />
+
+            <QRCodeModal
+                isVisible={qrCodeModalVisible}
                 orderId={createdOrderId}
                 onClose={handleClosePaymentModal}
                 paymentError={paymentError}

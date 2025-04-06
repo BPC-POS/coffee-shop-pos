@@ -1,58 +1,106 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, ActivityIndicator } from 'react-native';
 import { Table, TableArea, TableStatus } from '@/types/Table';
-import { mockTable } from '@/mock/mockTable';
-import WaiterTableModal from '@/components/waiter/WaiterTableModal';
-import OrdersScreen from '@/app/(main)/waiter/Orders/index'; // Import OrdersScreen
-
+import { getTables, getTableAreas, updateTable } from '@/api/table';
+import OrdersScreen from '@/app/(main)/waiter/Orders/index';
 
 interface Props {
   onTableSelect: (table: Table | null) => void;
 }
 
-const areas: TableArea[] = [
-  { id: '1', name: 'Tất cả', code: 'indoor', isActive: true },
-  { id: '2', name: 'Trong nhà', code: 'indoor', isActive: true },
-  { id: '3', name: 'Tầng 1', code: 'indoor', isActive: true },
-  { id: '4', name: 'Sân vườn', code: 'outdoor', isActive: true },
-];
-
 const AreaTableScreen = () => {
-  const [selectedArea, setSelectedArea] = useState<string>('1');
-  const [tables, setTables] = useState<Table[]>(mockTable);
-  const [selectedTable, setSelectedTable] = useState<Table | null>(null); // Bàn được chọn để thay đổi trạng thái
-  const [isModalVisible, setIsModalVisible] = useState(false); // Hiển thị Modal
-  const [isOrderModalVisible, setIsOrderModalVisible] = useState(false); // Hiển thị Modal OrdersScreen
-  const waitrTableModel = new WaiterTableModal(tables);
+  const [selectedArea, setSelectedArea] = useState<string>('all');
+  const [tables, setTables] = useState<Table[]>([]);
+  const [areas, setAreas] = useState<TableArea[]>([]);
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isOrderModalVisible, setIsOrderModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Lọc danh sách bàn theo khu vực
-  const filteredTables = selectedArea === '1'
-    ? tables
-    : tables.filter(table => {
-        const area = areas.find(a => a.id === selectedArea);
-        return area ? table.area.code === area.code : false;
-      });
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  // Xử lý khi bấm vào bàn
-  const handleTablePress = (table: Table) => {
-    setSelectedTable(table); // Lưu bàn được chọn
-    setIsModalVisible(true); // Hiển thị Modal
-  };
+      // Fetch tables
+      const tablesResponse = await getTables();
+      setTables(tablesResponse.data);
 
-  // Xử lý khi chọn trạng thái từ Modal
-  const handleStatusSelect = (status: TableStatus) => {
-    if (selectedTable) {
-      const updatedTables = waitrTableModel.updateTableStatus(selectedTable.id, status);
-      setTables(updatedTables); // Cập nhật danh sách bàn
-      setIsModalVisible(false); // Ẩn Modal
+      // Fetch areas
+      const areasResponse = await getTableAreas();
+      const fetchedAreas = areasResponse.data;
+      
+      // Add "All" option to areas
+      const allAreas: TableArea[] = [
+        { id: 'all', name: 'Tất cả', code: 'indoor' as const, isActive: true },
+        ...fetchedAreas
+      ];
+      setAreas(allAreas);
+
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
     }
   };
-  // Mở popup OrdersScreen
+
+  // Fetch tables and areas data
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Filter tables by area
+  const filteredTables = selectedArea === 'all'
+    ? tables
+    : tables.filter(table => table.areaId.toString() === selectedArea);
+
+  // Handle table status update
+  const handleStatusSelect = async (status: TableStatus) => {
+    if (selectedTable) {
+      try {
+        setLoading(true);
+        const updatedTable = {
+          ...selectedTable,
+          status: status
+        };
+
+        await updateTable({
+          id: selectedTable.id,
+          name: selectedTable.name,
+          capacity: selectedTable.capacity,
+          notes: selectedTable.note || '',
+          status: status,
+          areaId: selectedTable.areaId
+        });
+
+        // Update local state
+        setTables(prevTables =>
+          prevTables.map(table =>
+            table.id === selectedTable.id ? { ...table, status } : table
+          )
+        );
+
+      } catch (err) {
+        console.error('Error updating table status:', err);
+        setError('Không thể cập nhật trạng thái bàn. Vui lòng thử lại sau.');
+      } finally {
+        setLoading(false);
+        setIsModalVisible(false);
+      }
+    }
+  };
+
+  const handleTablePress = (table: Table) => {
+    setSelectedTable(table);
+    setIsModalVisible(true);
+  };
+
   const openOrderPopup = () => {
     setIsOrderModalVisible(true);
   };
 
-  // Đóng popup OrdersScreen
   const closeOrderPopup = () => {
     setIsOrderModalVisible(false);
   };
@@ -62,9 +110,12 @@ const AreaTableScreen = () => {
       style={[styles.areaButton, selectedArea === item.id && styles.selectedArea]}
       onPress={() => setSelectedArea(item.id)}
     >
-      <Text style={styles.areaText}>{item.name}</Text>
+      <Text style={[styles.areaText, selectedArea === item.id && styles.selectedAreaText]}>
+        {item.name}
+      </Text>
     </TouchableOpacity>
   );
+
   const statusMapping: Record<TableStatus, string> = {
     [TableStatus.AVAILABLE]: 'Trống',
     [TableStatus.OCCUPIED]: 'Có khách',
@@ -72,6 +123,7 @@ const AreaTableScreen = () => {
     [TableStatus.CLEANING]: 'Đang dọn dẹp',
     [TableStatus.MAINTENANCE]: 'Đang bảo trì',
   };
+
   const renderTableItem = ({ item }: { item: Table }) => {
     let statusText = statusMapping[item.status];
     let statusStyle = styles.available;
@@ -109,14 +161,41 @@ const AreaTableScreen = () => {
       </TouchableOpacity>
     );
   };
-  
+
+  if (loading && tables.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007bff" />
+        <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => {
+            setError(null);
+            setLoading(true);
+            // Re-fetch data
+            fetchData();
+          }}
+        >
+          <Text style={styles.retryButtonText}>Thử lại</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.orderButton} onPress={openOrderPopup}>
         <Text style={styles.orderButtonText}>Xem đơn hàng</Text>
       </TouchableOpacity>
-      {/* Danh sách khu vực và bàn */}
+
       <View style={styles.areaContainer}>
         <FlatList
           data={areas}
@@ -126,6 +205,7 @@ const AreaTableScreen = () => {
           showsHorizontalScrollIndicator={false}
         />
       </View>
+
       <View style={styles.tableContainer}>
         <FlatList
           data={filteredTables}
@@ -136,9 +216,7 @@ const AreaTableScreen = () => {
           showsVerticalScrollIndicator={false}
         />
       </View>
-      
 
-      {/* Modal chọn trạng thái */}
       <Modal
         visible={isModalVisible}
         transparent={true}
@@ -153,6 +231,7 @@ const AreaTableScreen = () => {
                 key={status}
                 style={styles.statusButton}
                 onPress={() => handleStatusSelect(status)}
+                disabled={loading}
               >
                 <Text style={styles.statusText}>{statusMapping[status]}</Text>
               </TouchableOpacity>
@@ -160,6 +239,7 @@ const AreaTableScreen = () => {
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setIsModalVisible(false)}
+              disabled={loading}
             >
               <Text style={styles.cancelText}>Hủy</Text>
             </TouchableOpacity>
@@ -167,8 +247,7 @@ const AreaTableScreen = () => {
         </View>
       </Modal>
 
-       {/* Modal OrdersScreen */}
-       <Modal
+      <Modal
         visible={isOrderModalVisible}
         transparent={true}
         animationType="slide"
@@ -189,6 +268,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#dc3545',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#007bff',
+    padding: 10,
+    borderRadius: 5,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
   areaContainer: {
     marginBottom: 16,
@@ -215,8 +325,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff',
   },
   areaText: {
-    color: '#fff',
+    color: '#333',
     fontWeight: 'bold',
+  },
+  selectedAreaText: {
+    color: '#fff',
   },
   tableContainer: {
     flex: 1,
@@ -252,13 +365,13 @@ const styles = StyleSheet.create({
     color: '#dc3545',
   },
   reserved: {
-    color: '#ffc107', // Màu vàng cho trạng thái "Đã đặt trước"
+    color: '#ffc107',
   },
   cleaning: {
-    color: '#17a2b8', // Màu xanh dương nhạt cho trạng thái "Đang dọn dẹp"
+    color: '#17a2b8',
   },
   maintenance: {
-    color: '#6c757d', // Màu xám cho trạng thái "Đang bảo trì"
+    color: '#6c757d',
   },
   modalContainer: {
     flex: 1,

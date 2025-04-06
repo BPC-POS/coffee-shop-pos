@@ -1,33 +1,43 @@
-import { Order, OrderStatus } from '@/types/Order';
-import { useEffect } from 'react';
-import { mockOrders } from '@/mock/mockdata'; // Import mock data
+import { Order, OrderStatus, OrderAPI } from '@/types/Order';
+import { useEffect, useState } from 'react';
+import { getOrders } from '@/api/order';
 
-class WaiterOrderModel {
-  private orders: Order[];
-
-  constructor(orders: Order[]) {
-    this.orders = orders;
-  }
-
-  // Lấy danh sách đơn hàng đã hoàn thành
-  getCompletedOrders(): Order[] {
-    return this.orders.filter(order => order.status === OrderStatus.COMPLETED);
-  }
+interface Props {
+  onCompletedOrders: (orders: OrderAPI[]) => void;
 }
 
-const WaiterOrderModal: React.FC<{ onCompletedOrders: (orders: Order[]) => void }> = ({ onCompletedOrders }) => {
+const WaiterOrderModal: React.FC<Props> = ({ onCompletedOrders }) => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    // Khởi tạo model với mock data
-    const orderModel = new WaiterOrderModel(mockOrders);
+    const fetchCompletedOrders = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch orders from API
+        const response = await getOrders();
+        const allOrders = response.data;
+        
+        // Filter completed orders
+        const completedOrders = allOrders.filter(order => order.status === 4); // 4 is COMPLETED status
+        
+        // Send completed orders to parent component
+        onCompletedOrders(completedOrders);
+      } catch (err) {
+        console.error('Error fetching completed orders:', err);
+        setError('Không thể tải danh sách đơn hàng đã hoàn thành');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Lấy danh sách đơn hàng đã hoàn thành
-    const completedOrders = orderModel.getCompletedOrders();
-
-    // Gửi danh sách đơn hàng lên OrderScreen
-    onCompletedOrders(completedOrders);
+    fetchCompletedOrders();
   }, [onCompletedOrders]);
 
-  return null; // Không hiển thị UI, chỉ dùng để truyền dữ liệu
+  // Component doesn't render anything, just handles data fetching
+  return null;
 };
 
 export default WaiterOrderModal;

@@ -1,6 +1,4 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
 
 interface Inventory {
     product_id: number;
@@ -9,27 +7,23 @@ interface Inventory {
 };
 
 const inventoryApi: AxiosInstance = axios.create({
-  baseURL: Constants.expoConfig?.extra?.apiUrl,
+  baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 inventoryApi.interceptors.request.use(
-    async (config) => {
-        try {
-            const authToken = await AsyncStorage.getItem('authToken');
-            if (authToken) {
-                config.headers.Authorization = `Bearer ${authToken}`;
-            }
-        } catch (error) {
-            console.error("Error getting auth token from AsyncStorage:", error);
+    (config) => {
+        const authToken = localStorage.getItem('authToken');
+        if (authToken) {
+          config.headers.Authorization = `Bearer ${authToken}`;
         }
         return config;
-    },
-    (error) => {
+      },
+      (error) => {
         return Promise.reject(error);
-    }   
+      }   
 );
 
 const getInventory = async (): Promise<AxiosResponse<Inventory[]>> => {
