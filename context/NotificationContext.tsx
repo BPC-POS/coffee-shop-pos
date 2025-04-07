@@ -1,101 +1,90 @@
-// context/NotificationContext.tsx
-"use client";
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-export type Notification = {
-  id: string;
-  title: string;
-  body: string;
-  timestamp: number;
-  read: boolean;
-  messageId?: string;
-};
+import * as React from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  ReactNode,
+} from "react";
+import * as Notifications from "expo-notifications";
+import type { Subscription } from "expo-notifications";
+import { registerForPushNotificationsAsync } from "@/utils/registerForPushNotificationsAsync";
 
 interface NotificationContextType {
-  notifications: Notification[];
-  addNotification: (notification: {
-    title: string;
-    body: string;
-    messageId?: string;
-  }) => void;
-  clearNotifications: () => void;
-  markAsRead: (id: string) => void;
+  expoPushToken: string | null;
+  notification: Notifications.Notification | null;
+  error: Error | null;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined
+);
 
-export const NotificationProvider = ({ children }: { children: ReactNode }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  // Load notifications from localStorage on initial load
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('notifications');
-      if (saved) {
-        try {
-          setNotifications(JSON.parse(saved));
-        } catch (e) {
-          console.error('Failed to parse notifications from localStorage', e);
-        }
-      }
-    }
-  }, []);
-
-  // Save notifications to localStorage when they change
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('notifications', JSON.stringify(notifications));
-    }
-  }, [notifications]);
-
-  const addNotification = (notification: {
-    title: string;
-    body: string;
-    messageId?: string;
-  }) => {
-    const newNotification: Notification = {
-      id: Date.now().toString(),
-      title: notification.title,
-      body: notification.body,
-      timestamp: Date.now(),
-      read: false,
-      messageId: notification.messageId,
-    };
-
-    setNotifications(prev => [newNotification, ...prev]);
-  };
-
-  const clearNotifications = () => {
-    setNotifications([]);
-  };
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notif =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
+export const useNotification = () => {
+  const context = useContext(NotificationContext);
+  if (context === undefined) {
+    throw new Error(
+      "useNotification must be used within a NotificationProvider"
     );
-  };
+  }
+  return context;
+};
+
+interface NotificationProviderProps {
+  children: ReactNode;
+}
+
+export const NotificationProvider: React.FC<NotificationProviderProps> = ({
+  children,
+}) => {
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+  const [notification, setNotification] =
+    useState<Notifications.Notification | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const notificationListener = useRef<Subscription>();
+  const responseListener = useRef<Subscription>();
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then(
+      (token) => setExpoPushToken(token),
+      (error) => setError(error)
+    );
+
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        console.log("🔔 Notification Received: ", notification);
+        setNotification(notification);
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log(
+          "🔔 Notification Response: ",
+          JSON.stringify(response, null, 2),
+          JSON.stringify(response.notification.request.content.data, null, 2)
+        );
+        // Handle the notification response here
+      });
+
+    return () => {
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(
+          notificationListener.current
+        );
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, []);
 
   return (
     <NotificationContext.Provider
-      value={{
-        notifications,
-        addNotification,
-        clearNotifications,
-        markAsRead,
-      }}
+      value={{ expoPushToken, notification, error }}
     >
       {children}
     </NotificationContext.Provider>
   );
-};
-
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (context === undefined) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
-  }
-  return context;
 };

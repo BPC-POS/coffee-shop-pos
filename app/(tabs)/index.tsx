@@ -7,10 +7,14 @@ import {
     ImageBackground,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useNotification } from '@/context/NotificationContext';
 
 const OverviewScreen = () => {
     const router = useRouter();
     const [isHovered, setIsHovered] = useState(false);
+    const { expoPushToken, notification, error } = useNotification();
+
+    if (error) return <Text>Error: {error.message}</Text>;
 
     const handleLogin = () => {
         router.push('/(auth)/login');
@@ -22,6 +26,7 @@ const OverviewScreen = () => {
             style={styles.backgroundImage}
         >
             <View style={styles.container}>
+                <Text style={styles.title}>token: {expoPushToken}</Text>
                 <Text style={styles.title}>Chào mừng đến với Ứng dụng!</Text>
                 <Text style={styles.welcomeText}>
                     Khám phá những điều thú vị đang chờ đón bạn.

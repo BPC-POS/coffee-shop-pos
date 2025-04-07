@@ -3,6 +3,17 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { Text } from 'react-native';
+import { NotificationProvider } from '@/context/NotificationContext';
+import Constants from 'expo-constants';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+}); 
 
 const Layout = () => {
   const [fontsLoaded] = useFonts({
@@ -18,6 +29,7 @@ const Layout = () => {
 
   return (
     <SafeAreaProvider>
+      <NotificationProvider>
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -25,6 +37,7 @@ const Layout = () => {
         <Stack.Screen name="/waiter" options={{ headerShown: false }} />
         <Stack.Screen name="/bartender" options={{ headerShown: false }} />
       </Stack>
+      </NotificationProvider>
     </SafeAreaProvider>
   );
 };
