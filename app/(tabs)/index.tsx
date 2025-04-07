@@ -26,7 +26,6 @@ const OverviewScreen = () => {
             style={styles.backgroundImage}
         >
             <View style={styles.container}>
-                <Text style={styles.title}>token: {expoPushToken}</Text>
                 <Text style={styles.title}>Chào mừng đến với Ứng dụng!</Text>
                 <Text style={styles.welcomeText}>
                     Khám phá những điều thú vị đang chờ đón bạn.
