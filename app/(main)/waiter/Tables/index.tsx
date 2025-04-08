@@ -26,7 +26,14 @@ const AreaTableScreen = () => {
       // Fetch tables
       const tablesResponse = await getTables();
       console.log('Tables response from API:', JSON.stringify(tablesResponse.data[0], null, 2));
-      setTables(tablesResponse.data);
+      
+      // Đảm bảo trạng thái bàn là số
+      const processedTables = tablesResponse.data.map(table => ({
+        ...table,
+        status: typeof table.status === 'string' ? parseInt(table.status) : table.status
+      }));
+      
+      setTables(processedTables);
 
       // Fetch areas
       const areasResponse = await getTableAreas();
@@ -87,19 +94,22 @@ const AreaTableScreen = () => {
           status: status
         };
 
+        // Đảm bảo trạng thái là số khi gửi lên API
+        const numericStatus = typeof status === 'string' ? parseInt(status) : status;
+        
         await updateTable({
           id: selectedTable.id,
           name: selectedTable.name,
           capacity: selectedTable.capacity,
           notes: selectedTable.note || '',
-          status: status,
+          status: numericStatus,
           areaId: selectedTable.areaId
         });
 
         // Update local state
         setTables(prevTables =>
           prevTables.map(table =>
-            table.id === selectedTable.id ? { ...table, status } : table
+            table.id === selectedTable.id ? { ...table, status: numericStatus } : table
           )
         );
 
@@ -149,10 +159,15 @@ const AreaTableScreen = () => {
   };
 
   const renderTableItem = ({ item }: { item: Table }) => {
-    let statusText = statusMapping[item.status];
+    console.log('Rendering table item:', item);
+    
+    // Đảm bảo trạng thái là số
+    const tableStatus = typeof item.status === 'string' ? parseInt(item.status) : item.status;
+    
+    let statusText = statusMapping[tableStatus as TableStatus] || 'Không xác định';
     let statusStyle = styles.available;
 
-    switch (item.status) {
+    switch (tableStatus) {
       case TableStatus.AVAILABLE:
         statusStyle = styles.available;
         break;

@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 10,
   },
   notificationsContainer: {
     width: '100%',

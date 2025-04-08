@@ -174,6 +174,14 @@ const POSArea: React.FC<Props> = ({ onTableSelect, tables = [] }) => {
             isOccupied && styles.occupiedTableButton,
         ];
 
+        const statusOptions = [
+            { status: TableStatus.AVAILABLE, label: 'Trống' },
+            { status: TableStatus.OCCUPIED, label: 'Có khách' },
+            { status: TableStatus.RESERVED, label: 'Đã đặt trước' },
+            { status: TableStatus.CLEANING, label: 'Đang dọn dẹp' },
+            { status: TableStatus.MAINTENANCE, label: 'Đang bảo trì' }
+        ];
+
         return (
             <TouchableOpacity
                 style={tableStyle}
@@ -196,9 +204,9 @@ const POSArea: React.FC<Props> = ({ onTableSelect, tables = [] }) => {
                         Alert.alert(
                             "Thay đổi trạng thái bàn",
                             `Chọn trạng thái mới cho bàn ${item.name}`,
-                            Object.keys(TableStatus).map(key => ({
-                                text: key, 
-                                onPress: () => handleStatusChange(item.id, TableStatus[key as keyof typeof TableStatus]),
+                            statusOptions.map(option => ({
+                                text: option.label,
+                                onPress: () => handleStatusChange(item.id, option.status)
                             })),
                             { cancelable: true }
                         );
