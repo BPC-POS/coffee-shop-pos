@@ -6,6 +6,7 @@ export default ({ config }: { config: ExpoConfig }): ExpoConfig => {
     ...config,
     extra: {
       apiUrl: process.env.REACT_PUBLIC_API_AUTH_URL,
+      apiAdminUrl: process.env.REACT_PUBLIC_API_ADMIN_URL,
       cdnMediafileUrl: process.env.NEXT_PUBLIC_CDN_MEDIAFILE_URL,
       apiMediafileUrl: process.env.NEXT_PUBLIC_API_MEDIAFILE_URL,
       eas:{

@@ -7,10 +7,10 @@ export interface Staff {
   phone_number: string; 
   role_id?: StaffPosition | null; 
   status?: StaffStatus;     
-  meta?: Record<string, unknown>;        
+  meta?: StaffMeta;      
   member_id?: number;
   role?: Role;  
-  shifts?: number[];   
+  shifts?: Shift[];   
   member?: Member;       
   position?: StaffPosition; 
   department?: Department; 
@@ -72,14 +72,6 @@ export interface WorkSchedule {
   shift: Shift;
   status: ScheduleStatus;
   note?: string;
-}
-
-export interface Shift {
-  id: number;
-  name: string;
-  startTime: string; 
-  endTime: string;
-  requiredStaff: number;
 }
 
 export enum ScheduleStatus {
@@ -154,4 +146,31 @@ export enum PayrollStatus {
   DRAFT = 'draft',
   APPROVED = 'approved',
   PAID = 'paid',
+}
+
+export interface Shift {
+  id?: number; 
+  employee_id: number;
+  start_time: string; 
+  end_time: string;   
+  meta?: ShiftMeta;   
+  createdAt?: string;
+  updatedAt?: string;
+  employee?: Staff; // Add the nested employee object (optional as it might not always be included)
+}
+
+export interface ShiftMeta {
+  shiftId?: number;
+  additionalData: {
+    [key: string]: Record<string, unknown>;
+  }
+}
+
+export interface ShiftSchedule {
+  shiftId: number; 
+  date: string;   
+}
+
+export interface StaffMeta {
+  [key: string]: Record<string, unknown>; 
 }

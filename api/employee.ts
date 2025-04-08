@@ -1,18 +1,24 @@
-import axios, { AxiosResponse, AxiosInstance } from 'axios';
+import axios, { AxiosResponse, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 import { Staff } from '@/types/Staff';
 
 const employeeApi: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_AUTH_URL,
+  baseURL: Constants.expoConfig?.extra?.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 employeeApi.interceptors.request.use(
-  (config) => {
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      config.headers.Authorization = `Bearer ${authToken}`;
+  async (config: InternalAxiosRequestConfig) => {
+    try {
+      const authToken = await AsyncStorage.getItem('authToken');
+      if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+      }
+    } catch (error) {
+      console.error("Error getting auth token from AsyncStorage:", error);
     }
     return config;
   },
@@ -24,6 +30,7 @@ employeeApi.interceptors.request.use(
 const getEmployees = async (): Promise<AxiosResponse> => {
   try {
     const response: AxiosResponse = await employeeApi.get('/employees');
+    console.log("Employees fetched:", response.data);
     return response;
   } catch (error: unknown) {
     console.error("Error fetching employees:", error);
