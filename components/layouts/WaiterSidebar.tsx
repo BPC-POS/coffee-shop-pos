@@ -18,6 +18,9 @@ const WaiterSidebar: React.FC<SidebarProps> = ({ children }) => {
       <TouchableOpacity onPress={() => router.push('/(main)/waiter')}>
         <Text style={styles.drawerItem}>Table</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/pos/schedule')}>
+        <Text style={styles.drawerItem}>Schedule</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
       <Text style={styles.logoutItem}>Đăng xuất</Text>
       </TouchableOpacity>
