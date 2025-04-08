@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, ActivityIndicator } from 'react-native';
 import { Table, TableArea, TableStatus } from '@/types/Table';
 import { getTables, getTableAreas, updateTable } from '@/api/table';
@@ -25,17 +25,22 @@ const AreaTableScreen = () => {
 
       // Fetch tables
       const tablesResponse = await getTables();
+      console.log('Tables response from API:', JSON.stringify(tablesResponse.data[0], null, 2));
       setTables(tablesResponse.data);
 
       // Fetch areas
       const areasResponse = await getTableAreas();
-      const fetchedAreas = areasResponse.data;
+      console.log('Areas response from API:', JSON.stringify(areasResponse.data, null, 2));
       
       // Add "All" option to areas
       const allAreas: TableArea[] = [
         { id: 'all', name: 'Tất cả', code: 'indoor' as const, isActive: true },
-        ...fetchedAreas
+        ...areasResponse.data
       ];
+      
+      // Log để kiểm tra
+      console.log('All areas after adding "All" option:', allAreas);
+      
       setAreas(allAreas);
 
     } catch (err) {
@@ -52,9 +57,25 @@ const AreaTableScreen = () => {
   }, []);
 
   // Filter tables by area
-  const filteredTables = selectedArea === 'all'
-    ? tables
-    : tables.filter(table => table.areaId.toString() === selectedArea);
+  const filteredTables = useMemo(() => {
+    console.log('Filtering tables with selectedArea:', selectedArea);
+    console.log('All tables:', tables);
+    
+    if (selectedArea === 'all') {
+      return tables;
+    }
+    
+    // So sánh areaId với selectedArea
+    return tables.filter(table => {
+      console.log('Table:', table.id, 'Area ID:', table.areaId, 'type:', typeof table.areaId);
+      console.log('Selected Area:', selectedArea, 'type:', typeof selectedArea);
+      
+      // Chuyển đổi cả hai thành chuỗi để so sánh
+      return String(table.areaId) === String(selectedArea);
+    });
+  }, [selectedArea, tables]);
+
+  console.log('Filtered tables:', filteredTables);
 
   // Handle table status update
   const handleStatusSelect = async (status: TableStatus) => {
@@ -108,7 +129,10 @@ const AreaTableScreen = () => {
   const renderAreaItem = ({ item }: { item: TableArea }) => (
     <TouchableOpacity
       style={[styles.areaButton, selectedArea === item.id && styles.selectedArea]}
-      onPress={() => setSelectedArea(item.id)}
+      onPress={() => {
+        console.log('Selecting area:', item);
+        setSelectedArea(item.id);
+      }}
     >
       <Text style={[styles.areaText, selectedArea === item.id && styles.selectedAreaText]}>
         {item.name}
@@ -207,14 +231,21 @@ const AreaTableScreen = () => {
       </View>
 
       <View style={styles.tableContainer}>
-        <FlatList
-          data={filteredTables}
-          renderItem={renderTableItem}
-          keyExtractor={item => String(item.id)}
-          numColumns={2}
-          columnWrapperStyle={styles.tableRow}
-          showsVerticalScrollIndicator={false}
-        />
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : filteredTables.length === 0 ? (
+          <Text style={styles.emptyText}>Không có bàn nào trong khu vực này</Text>
+        ) : (
+          <FlatList
+            data={filteredTables}
+            renderItem={renderTableItem}
+            keyExtractor={item => item.id.toString()}
+            numColumns={2}
+            contentContainerStyle={styles.tableList}
+          />
+        )}
       </View>
 
       <Modal
@@ -226,7 +257,13 @@ const AreaTableScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Chọn trạng thái bàn</Text>
-            {(Object.values(TableStatus) as TableStatus[]).map((status) => (
+            {[
+              TableStatus.AVAILABLE,
+              TableStatus.OCCUPIED,
+              TableStatus.RESERVED,
+              TableStatus.CLEANING,
+              TableStatus.MAINTENANCE
+            ].map((status) => (
               <TouchableOpacity
                 key={status}
                 style={styles.statusButton}
@@ -428,6 +465,15 @@ const styles = StyleSheet.create({
   cancelText: {
     color: 'white',
     fontSize: 16,
+  },
+  tableList: {
+    padding: 5,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 

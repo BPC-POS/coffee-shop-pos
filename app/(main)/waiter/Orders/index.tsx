@@ -192,32 +192,9 @@ const OrderListScreen = () => {
         </View>
 
         <View style={styles.orderSummary}>
-          <Text style={styles.summaryText}>Tổng số món: {totalItems}</Text>
           <Text style={styles.summaryText}>Tổng tiền: {item.total_amount.toLocaleString()}đ</Text>
         </View>
         
-        <View style={styles.itemsList}>
-          {item.items && item.items.length > 0 ? (
-            item.items.map((orderItem, index) => (
-              <View key={index} style={styles.productItem}>
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>
-                    {orderItem.product?.name || `Sản phẩm #${orderItem.product_id}`}
-                  </Text>
-                  <Text style={styles.productMeta}>
-                    {orderItem.quantity}x {orderItem.unit_price.toLocaleString()}đ
-                  </Text>
-                </View>
-                <Text style={styles.productTotal}>
-                  {(orderItem.quantity * orderItem.unit_price).toLocaleString()}đ
-                </Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.noItemsText}>Không có sản phẩm</Text>
-          )}
-        </View>
-
         {isReadyStatus && !isUpdating && (
           <TouchableOpacity
             style={[styles.actionButton, { backgroundColor: getStatusColor(OrderStatusAPI.COMPLETED) }]}
@@ -496,6 +473,17 @@ const styles = StyleSheet.create({
     color: '#2ecc71',
     marginTop: 4,
     fontWeight: '500',
+  },
+  productDescription: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+  productRecipes: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
   },
 });
 
