@@ -7,10 +7,14 @@ import {
     ImageBackground,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useNotification } from '@/context/NotificationContext';
 
 const OverviewScreen = () => {
     const router = useRouter();
     const [isHovered, setIsHovered] = useState(false);
+    const { expoPushToken, notification, error } = useNotification();
+
+    if (error) return <Text>Error: {error.message}</Text>;
 
     const handleLogin = () => {
         router.push('/(auth)/login');

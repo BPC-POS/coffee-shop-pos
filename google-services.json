@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "379675965297",
+    "project_id": "quan-ly-quan-cafe-pos",
+    "storage_bucket": "quan-ly-quan-cafe-pos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:379675965297:android:790a0cb0e6923b3057a8d0",
+        "android_client_info": {
+          "package_name": "com.nibies.bpcposapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYJzFSqk50zDhYp9hf2TRoHqYT4ne-fbI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

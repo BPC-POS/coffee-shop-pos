@@ -9,16 +9,31 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nibies.bpcposapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.nibies.bpcposapp"
     },
     "extra": {
-      "REACT_PUBLIC_API_AUTH_URL": "https://bpc-pos-app-api.nibies.space"
+      "REACT_PUBLIC_API_AUTH_URL": "https://bpc-pos-app-api.nibies.space",
+      "apiUrl": "https://bpc-pos-app-api.nibies.space",
+      "cdnMediafileUrl": "https://bpc-pos.s3.ap-southeast-1.amazonaws.com",
+      "apiMediafileUrl": "https://bpc-pos-mediafile-api.nibies.space/",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "a2ada37d-dfba-4047-b375-ae6ec41c98f4"
+      },
+      "projectId": "a2ada37d-dfba-4047-b375-ae6ec41c98f4"
     },
     "web": {
       "bundler": "metro",
@@ -40,6 +55,7 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "owner": "pusheen122"
   }
 }
