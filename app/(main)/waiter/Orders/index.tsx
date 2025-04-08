@@ -202,11 +202,21 @@ const OrderListScreen = () => {
               <View key={index} style={styles.productItem}>
                 <View style={styles.productInfo}>
                   <Text style={styles.productName}>
-                    {orderItem.product?.name || `Sản phẩm #${orderItem.product_id}`}
+                    {orderItem.product?.name || orderItem.product_name || `Sản phẩm #${orderItem.product_id}`}
                   </Text>
                   <Text style={styles.productMeta}>
                     {orderItem.quantity}x {orderItem.unit_price.toLocaleString()}đ
                   </Text>
+                  {orderItem.product?.description && (
+                    <Text style={styles.productDescription}>
+                      {orderItem.product.description}
+                    </Text>
+                  )}
+                  {orderItem.product?.meta?.recipes && (
+                    <Text style={styles.productRecipes}>
+                      Công thức: {Object.keys(orderItem.product.meta.recipes).join(', ')}
+                    </Text>
+                  )}
                 </View>
                 <Text style={styles.productTotal}>
                   {(orderItem.quantity * orderItem.unit_price).toLocaleString()}đ
@@ -496,6 +506,17 @@ const styles = StyleSheet.create({
     color: '#2ecc71',
     marginTop: 4,
     fontWeight: '500',
+  },
+  productDescription: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+  productRecipes: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
   },
 });
 
