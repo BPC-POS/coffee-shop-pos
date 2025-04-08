@@ -257,7 +257,13 @@ const AreaTableScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Chọn trạng thái bàn</Text>
-            {(Object.values(TableStatus) as TableStatus[]).map((status) => (
+            {[
+              TableStatus.AVAILABLE,
+              TableStatus.OCCUPIED,
+              TableStatus.RESERVED,
+              TableStatus.CLEANING,
+              TableStatus.MAINTENANCE
+            ].map((status) => (
               <TouchableOpacity
                 key={status}
                 style={styles.statusButton}
